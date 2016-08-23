@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns="http://risedev.yy.com/schema/mysql"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://risedev.yy.com/schema/mysql"
+	elementFormDefault="qualified">
+
+	<xs:complexType name="classType">
+		<xs:simpleContent>
+			<xs:extension base="xs:string">
+				<xs:attribute name="id" type="xs:string" use="optional" />
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+
+	<xs:complexType name="sqlType">
+		<xs:simpleContent>
+			<xs:extension base="xs:string">
+				<xs:attribute name="id" type="xs:string" use="required" />
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+
+	<xs:element name="mysql">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="table" type="classType" maxOccurs="unbounded" minOccurs="0"/>
+				<xs:element name="meta" type="classType" maxOccurs="unbounded" minOccurs="0"/>
+				<xs:element name="sql" type="sqlType" maxOccurs="unbounded" minOccurs="0"/>
+			</xs:sequence>
+			<xs:attribute name="namespace" type="xs:string" />
+		</xs:complexType>
+	</xs:element>
+
+</xs:schema>
