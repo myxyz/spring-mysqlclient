@@ -140,7 +140,7 @@ public class SqlDdlKit extends SqlKit {
 
 	}
 
-	static final String getColumnName(FieldMetaInfo fieldMetaInfo, ColumnAnnotation columnAnnotation) {
+	private static final String getColumnName(FieldMetaInfo fieldMetaInfo, ColumnAnnotation columnAnnotation) {
 		String name = columnAnnotation.name;
 		if (AsmKit.isEmpty(name)) {
 			name = fieldMetaInfo.name;
@@ -148,7 +148,7 @@ public class SqlDdlKit extends SqlKit {
 		return name;
 	}
 
-	static final SqlType getColumnSqlType(ColumnAnnotation columnAnnotation, JavaType javaType) {
+	private static final SqlType getColumnSqlType(ColumnAnnotation columnAnnotation, JavaType javaType) {
 		SqlType type = columnAnnotation.type;
 		if (type == null) {
 			type = javaType.defaultSqlType;
@@ -156,7 +156,7 @@ public class SqlDdlKit extends SqlKit {
 		return type;
 	}
 
-	static final Integer getColumnLength(ColumnAnnotation columnAnnotation, JavaType javaType) {
+	private static final Integer getColumnLength(ColumnAnnotation columnAnnotation, JavaType javaType) {
 		Integer length = columnAnnotation.length;
 		if (length == null) {
 			length = javaType.defaultLength;
@@ -164,7 +164,7 @@ public class SqlDdlKit extends SqlKit {
 		return length;
 	}
 
-	static final Integer getColumnDecimal(ColumnAnnotation columnAnnotation, JavaType javaType) {
+	private static final Integer getColumnDecimal(ColumnAnnotation columnAnnotation, JavaType javaType) {
 		Integer decimals = columnAnnotation.decimals;
 		if (decimals == null) {
 			decimals = javaType.defaultDecimals;
@@ -225,7 +225,7 @@ public class SqlDdlKit extends SqlKit {
 		}
 	}
 
-	static boolean equalsIgnoreOrder(List<String> list1, List<String> list2) {
+	private static boolean equalsIgnoreOrder(List<String> list1, List<String> list2) {
 		if (list1 == list2) {
 			return true;
 		}
@@ -368,7 +368,7 @@ public class SqlDdlKit extends SqlKit {
 		return sb.toString();
 	}
 
-	static String genPrimaryKeyDdl(PrimaryKeyAnnotation primaryKeyAnnotation) {
+	private static String genPrimaryKeyDdl(PrimaryKeyAnnotation primaryKeyAnnotation) {
 		StringBuilder cols = new StringBuilder(256);
 		cols.append("PRIMARY KEY(");
 		for (String key : primaryKeyAnnotation.columns) {
@@ -382,7 +382,7 @@ public class SqlDdlKit extends SqlKit {
 		return cols.toString();
 	}
 
-	static String genIndexesDdl(IndexAnnotation ia) {
+	private static String genIndexesDdl(IndexAnnotation ia) {
 		StringBuilder cols = new StringBuilder(1024);
 
 		if (ia.type != null && ia.type.sqlValue != null) {
@@ -399,7 +399,7 @@ public class SqlDdlKit extends SqlKit {
 		return cols.toString();
 	}
 
-	static String genForeignKeyDdl(ReferenceAnnotation ra) {
+	private static String genForeignKeyDdl(ReferenceAnnotation ra) {
 		StringBuilder cols = new StringBuilder(1024);
 
 		cols.append("CONSTRAINT ").append(identifier(ra.name)).append(" FOREIGN KEY(");
@@ -416,7 +416,7 @@ public class SqlDdlKit extends SqlKit {
 		return cols.toString();
 	}
 
-	static String genColumnDdl(FieldMetaInfo fieldMetaInfo, ColumnAnnotation columnAnnotation) {
+	private static String genColumnDdl(FieldMetaInfo fieldMetaInfo, ColumnAnnotation columnAnnotation) {
 		StringBuilder cols = new StringBuilder(128);
 
 		String name = getColumnName(fieldMetaInfo, columnAnnotation);
@@ -449,95 +449,40 @@ public class SqlDdlKit extends SqlKit {
 			cols.append(" PRIMARY KEY");
 		}
 		if (AsmKit.isNotEmpty(columnAnnotation.defaultValue)) {
-			cols.append(" DEFAULT ").append(columnAnnotation.defaultValue);
+			cols.append(" DEFAULT ").append(formatDefaultValue(columnAnnotation.defaultValue, sqlType));
 		}
 
 		return cols.toString();
 	}
 
-	static Integer defaultSqlTypeLength(SqlType sqlType) {
+	private static String formatDefaultValue(String defaultValue, SqlType sqlType) {
 		switch (sqlType) {
-		case VARCHAR:
-		case VARCHAR_BINARY:
-			return 255;
+		case NULL:
+		case BIT:
+		case TINYINT:
+		case SMALLINT:
+		case MEDIUMINT:
+		case INT:
+		case INTEGER:
+		case BIGINT:
+		case REAL:
+		case DOUBLE:
+		case FLOAT:
+		case DECIMAL:
 		case NUMERIC:
-		case DECIMAL:
-			return 30;
+			return defaultValue;
 		default:
-			return null;
-		}
-
-	}
-
-	static Integer defaultSqlTypeDecimal(SqlType sqlType) {
-		switch (sqlType) {
-		case DECIMAL:
-			return 5;
-		default:
-			return null;
-		}
-
-	}
-
-	static SqlType defaultSqlType4JavaType(String descriptor) {
-		JavaType javaType = JavaType.match(descriptor);
-		switch (javaType) {
-		case _boolean:
-		case _Boolean:
-			return SqlType.BIT;
-		case _char:
-		case _Character:
-			return SqlType.CHAR;
-		case _byte:
-		case _Byte:
-			return SqlType.TINYINT;
-		case _short:
-		case _Short:
-			return SqlType.SMALLINT;
-		case _int:
-		case _Integer:
-			return SqlType.INT;
-		case _long:
-		case _Long:
-			return SqlType.BIGINT;
-		case _float:
-		case _Float:
-			return SqlType.FLOAT;
-		case _double:
-		case _Double:
-			return SqlType.DOUBLE;
-		case _String:
-			return SqlType.VARCHAR;
-		case _BigDecimal:
-			return SqlType.DECIMAL;
-		case _BigInteger:
-			return SqlType.NUMERIC;
-		case _JavaUtilDate:
-			return SqlType.DATETIME;
-		case _Date:
-			return SqlType.DATE;
-		case _Time:
-			return SqlType.TIME;
-		case _Timestamp:
-			return SqlType.TIMESTAMP;
-		case _bytes:
-			return SqlType.BINARY;
-		case _Ref:
-			return SqlType.VARCHAR;
-		case _URL:
-			return SqlType.VARCHAR;
-		case _Blob:
-			return SqlType.BLOB;
-		case _Clob:
-			return SqlType.TEXT;
-		case _SQLXML:
-			return SqlType.VARCHAR;
-		case _InputStream:
-			return SqlType.LONGBLOB;
-		case _Reader:
-			return SqlType.LONGTEXT;
-		default:
-			throw new MysqlClientException("Can't convert javaType to any other sqlType: " + javaType);
+			//其他类型如果首尾不以单引结束则自动加上
+			StringBuilder sb = new StringBuilder(defaultValue.length() + 4);
+			sb.append(defaultValue);
+			if (sb.charAt(0) != '\'') {
+				sb.insert(0, '\'');
+			}
+			if (sb.charAt(sb.length() - 1) != '\'') {
+				sb.append('\'');
+			}
+			return sb.toString();
 		}
 	}
+
 }
