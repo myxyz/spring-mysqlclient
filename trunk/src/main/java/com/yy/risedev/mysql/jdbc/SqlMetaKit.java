@@ -19,7 +19,7 @@ public final class SqlMetaKit extends SqlKit {
 	public static String modifyPsqlForInsertIgnore(SqlMeta meta) {
 		StringBuilder sb = new StringBuilder(meta.psql.length() + 16);
 		sb.append(meta.psql);
-		sb.replace(0, "SELECT".length(), "SELECT IGNORE");
+		sb.insert("INSERT".length(), " IGNORE");
 		return sb.toString();
 	}
 

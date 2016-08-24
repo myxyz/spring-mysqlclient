@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -158,6 +160,20 @@ public final class AsmKit {
 		}
 	}
 
+	static final Comparator<FieldMetaInfo> FieldMetaInfoComparator = new Comparator<FieldMetaInfo>() {
+
+		@Override
+		public int compare(FieldMetaInfo o1, FieldMetaInfo o2) {
+			if (o1.order > o2.order) {
+				return -1;
+			} else if (o1.order < o2.order) {
+				return 1;
+			} else {
+				return 0;
+			}
+		}
+	};
+
 	static void gatherTableMetaData(ClassMetaInfo classMetaInfo) {
 
 		// 表名
@@ -171,10 +187,18 @@ public final class AsmKit {
 		}
 		classMetaInfo.tableName = tableName;
 
+		// 字段排序
+		List<FieldMetaInfo> fields = new LinkedList<FieldMetaInfo>(classMetaInfo.fields.values());
+		Collections.sort(fields, FieldMetaInfoComparator);
+		classMetaInfo.fields.clear();
+		for (FieldMetaInfo field : fields) {
+			classMetaInfo.fields.put(field.name, field);
+		}
+
 		// 主键
 		List<String> keys = new LinkedList<String>();
 		List<String> cols = new LinkedList<String>();
-		for (FieldMetaInfo field : classMetaInfo.fields.values()) {
+		for (FieldMetaInfo field : fields) {
 			if (field.columnAnnotation != null) {
 				String name = field.columnAnnotation.name;
 				if (AsmKit.isEmpty(name)) {

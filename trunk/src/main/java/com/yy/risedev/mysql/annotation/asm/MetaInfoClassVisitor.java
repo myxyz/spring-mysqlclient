@@ -34,11 +34,13 @@ class MetaInfoClassVisitor extends ClassVisitor {
 
 	final boolean visitTableOrMeta;
 
+	int order;
 	String superName;
 
 	public MetaInfoClassVisitor(ClassMetaInfo result) {
 		super(SpringAsmInfo.ASM_VERSION);
 		this.result = result;
+		this.order = result.hierarchies * 10000;
 		this.visitTableOrMeta = result.internalName == null;
 	}
 
@@ -96,6 +98,7 @@ class MetaInfoClassVisitor extends ClassVisitor {
 			field.name = name;
 			field.descriptor = desc;
 			field.signature = signature;
+			field.order = (order--);
 			result.fields.put(name, field);
 			return new SimpleFieldVisitor(field);
 		}
@@ -133,6 +136,7 @@ class MetaInfoClassVisitor extends ClassVisitor {
 			return;
 		}
 		try {
+			result.hierarchies++;
 			ClassReader cr = new ClassReader(getClassNameFromInternalName(superName));
 			cr.accept(new MetaInfoClassVisitor(result), CLASS_READER_ACCEPT_FLAGS);
 		} catch (IOException e) {

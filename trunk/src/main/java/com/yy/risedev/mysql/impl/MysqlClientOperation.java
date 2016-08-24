@@ -105,7 +105,7 @@ abstract class MysqlClientOperation {
 		SqlMeta meta = insertSqlMetaCache.get(tableType);
 
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
+			throw new MysqlClientException("Not found table class: " + tableType);
 		} else if (showSql) {
 			logger.info("Sql for insert: " + meta);
 		}
@@ -127,11 +127,13 @@ abstract class MysqlClientOperation {
 
 		Class<?> tableType = tableObject.getClass();
 		SqlMeta meta = insertSqlMetaCache.get(tableType);
-		String psql = SqlMetaKit.modifyPsqlForInsertIgnore(meta);
 
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
-		} else if (showSql) {
+			throw new MysqlClientException("Not found table class: " + tableType);
+		}
+
+		String psql = SqlMetaKit.modifyPsqlForInsertIgnore(meta);
+		if (showSql) {
 			logger.info("Sql for insertIgnore: " + meta.toString(psql));
 		}
 
@@ -154,7 +156,7 @@ abstract class MysqlClientOperation {
 		SqlMeta meta = insertSqlMetaCache.get(tableType);
 
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
+			throw new MysqlClientException("Not found table class: " + tableType);
 		} else if (showSql) {
 			logger.info("Sql for insert: " + meta);
 		}
@@ -185,11 +187,12 @@ abstract class MysqlClientOperation {
 
 		Class<?> tableType = tableObject.getClass();
 		SqlMeta meta = insertSqlMetaCache.get(tableType);
-		String psql = SqlMetaKit.modifyPsqlForInsertIgnore(meta);
 
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
-		} else if (showSql) {
+			throw new MysqlClientException("Not found table class: " + tableType);
+		}
+		String psql = SqlMetaKit.modifyPsqlForInsertIgnore(meta);
+		if (showSql) {
 			logger.info("Sql for insertIgnore: " + meta.toString(psql));
 		}
 
@@ -221,7 +224,7 @@ abstract class MysqlClientOperation {
 		SqlMeta meta = updateSqlMetaCache.get(tableType);
 
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
+			throw new MysqlClientException("Not found table class: " + tableType);
 		} else if (showSql) {
 			logger.info("Sql for update: " + meta);
 		}
@@ -245,7 +248,7 @@ abstract class MysqlClientOperation {
 		SqlMeta meta = replaceSqlMetaCache.get(tableType);
 
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
+			throw new MysqlClientException("Not found table class: " + tableType);
 		} else if (showSql) {
 			logger.info("Sql for replace: " + meta);
 		}
@@ -269,7 +272,7 @@ abstract class MysqlClientOperation {
 		SqlMeta meta = replaceSqlMetaCache.get(tableType);
 
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
+			throw new MysqlClientException("Not found table class: " + tableType);
 		} else if (showSql) {
 			logger.info("Sql for replace: " + meta);
 		}
@@ -302,7 +305,7 @@ abstract class MysqlClientOperation {
 		SqlMeta meta = mergeSqlMetaCache.get(tableType);
 
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
+			throw new MysqlClientException("Not found table class: " + tableType);
 		} else if (showSql) {
 			logger.info("Sql for merge: " + meta);
 		}
@@ -326,7 +329,7 @@ abstract class MysqlClientOperation {
 		SqlMeta meta = mergeSqlMetaCache.get(tableType);
 
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
+			throw new MysqlClientException("Not found table class: " + tableType);
 		} else if (showSql) {
 			logger.info("Sql for merge: " + meta);
 		}
@@ -359,7 +362,7 @@ abstract class MysqlClientOperation {
 		SqlMeta meta = deleteSqlMetaCache.get(tableType);
 
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
+			throw new MysqlClientException("Not found table class: " + tableType);
 		} else if (showSql) {
 			logger.info("Sql for delete: " + meta);
 		}
@@ -382,7 +385,7 @@ abstract class MysqlClientOperation {
 		SqlMeta meta = deleteSqlMetaCache.get(tableType);
 
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
+			throw new MysqlClientException("Not found table class: " + tableType);
 		} else if (showSql) {
 			logger.info("Sql for delete: " + meta);
 		}
@@ -407,7 +410,7 @@ abstract class MysqlClientOperation {
 		SqlMeta meta = selectSqlMetaCache.get(tableType);
 
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
+			throw new MysqlClientException("Not found table class: " + tableType);
 		} else if (showSql) {
 			logger.info("Sql for select: " + meta);
 		}
@@ -444,7 +447,7 @@ abstract class MysqlClientOperation {
 		SqlMeta meta = selectSqlMetaCache.get(tableType);
 
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
+			throw new MysqlClientException("Not found table class: " + tableType);
 		} else if (showSql) {
 			logger.info("Sql for select2: " + meta);
 		}
@@ -478,7 +481,7 @@ abstract class MysqlClientOperation {
 		SqlMeta meta = selectSqlMetaCache.get(tableType);
 
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
+			throw new MysqlClientException("Not found table class: " + tableType);
 		} else if (showSql) {
 			logger.info("Sql for selectByKey: " + meta);
 		}
@@ -516,7 +519,7 @@ abstract class MysqlClientOperation {
 		SqlMeta meta = selectAllSqlMetaCache.get(tableType);
 
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
+			throw new MysqlClientException("Not found table class: " + tableType);
 		} else if (showSql) {
 			logger.info("Sql for selectAll: " + meta);
 		}
@@ -549,10 +552,13 @@ abstract class MysqlClientOperation {
 	protected <T> List<T> selectRange(Connection conn, Class<T> tableType, int start, int max) throws SQLException {
 
 		SqlMeta meta = selectAllSqlMetaCache.get(tableType);
-		String psql = SqlMetaKit.modifyPsqlForLimit(meta, start, max);
+
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
-		} else if (showSql) {
+			throw new MysqlClientException("Not found table class: " + tableType);
+		}
+
+		String psql = SqlMetaKit.modifyPsqlForLimit(meta, start, max);
+		if (showSql) {
 			logger.info("Sql for selectRange: " + meta.toString(psql));
 		}
 
@@ -584,11 +590,13 @@ abstract class MysqlClientOperation {
 	@SuppressWarnings("unchecked")
 	protected <T> T selectFirst(Connection conn, Class<T> tableType) throws SQLException {
 		SqlMeta meta = selectAllSqlMetaCache.get(tableType);
-		String psql = SqlMetaKit.modifyPsqlForLimit(meta, 0, 1);
 
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
-		} else if (showSql) {
+			throw new MysqlClientException("Not found table class: " + tableType);
+		}
+
+		String psql = SqlMetaKit.modifyPsqlForLimit(meta, 0, 1);
+		if (showSql) {
 			logger.info("Sql for selectFirst: " + meta.toString(psql));
 		}
 
@@ -628,10 +636,12 @@ abstract class MysqlClientOperation {
 		}
 
 		SqlMeta meta = selectAllSqlMetaCache.get(tableType);
-		String psql = SqlMetaKit.modifyPsqlForPageLimit(meta, start, max, page.getOrderBy(), page.isOrderDesc());
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
-		} else if (showSql) {
+			throw new MysqlClientException("Not found table class: " + tableType);
+		}
+
+		String psql = SqlMetaKit.modifyPsqlForPageLimit(meta, start, max, page.getOrderBy(), page.isOrderDesc());
+		if (showSql) {
 			logger.info("Sql for selectPage: " + meta.toString(psql));
 		}
 
@@ -685,9 +695,8 @@ abstract class MysqlClientOperation {
 
 		Class<?> tableType = tableObjects[0].getClass();
 		SqlMeta meta = insertSqlMetaCache.get(tableType);
-
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
+			throw new MysqlClientException("Not found table class: " + tableType);
 		} else if (showSql) {
 			logger.info("Sql for batchInsert: " + meta);
 		}
@@ -716,11 +725,12 @@ abstract class MysqlClientOperation {
 
 		Class<?> tableType = tableObjects[0].getClass();
 		SqlMeta meta = insertSqlMetaCache.get(tableType);
-		String psql = SqlMetaKit.modifyPsqlForInsertIgnore(meta);
-
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
-		} else if (showSql) {
+			throw new MysqlClientException("Not found table class: " + tableType);
+		}
+
+		String psql = SqlMetaKit.modifyPsqlForInsertIgnore(meta);
+		if (showSql) {
 			logger.info("Sql for batchInsertIgnore: " + psql);
 		}
 
@@ -749,7 +759,7 @@ abstract class MysqlClientOperation {
 		Class<?> tableType = tableObjects[0].getClass();
 		SqlMeta meta = insertSqlMetaCache.get(tableType);
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
+			throw new MysqlClientException("Not found table class: " + tableType);
 		} else if (showSql) {
 			logger.info("Sql for batchInsert: " + meta);
 		}
@@ -792,10 +802,12 @@ abstract class MysqlClientOperation {
 
 		Class<?> tableType = tableObjects[0].getClass();
 		SqlMeta meta = insertSqlMetaCache.get(tableType);
-		String psql = SqlMetaKit.modifyPsqlForInsertIgnore(meta);
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
-		} else if (showSql) {
+			throw new MysqlClientException("Not found table class: " + tableType);
+		}
+
+		String psql = SqlMetaKit.modifyPsqlForInsertIgnore(meta);
+		if (showSql) {
 			logger.info("Sql for batchInsertIgnore: " + meta.toString(psql));
 		}
 
@@ -838,7 +850,7 @@ abstract class MysqlClientOperation {
 		Class<?> tableType = tableObjects[0].getClass();
 		SqlMeta meta = updateSqlMetaCache.get(tableType);
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
+			throw new MysqlClientException("Not found table class: " + tableType);
 		} else if (showSql) {
 			logger.info("Sql for batchUpdate: " + meta);
 		}
@@ -868,7 +880,7 @@ abstract class MysqlClientOperation {
 		Class<?> tableType = tableObjects[0].getClass();
 		SqlMeta meta = replaceSqlMetaCache.get(tableType);
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
+			throw new MysqlClientException("Not found table class: " + tableType);
 		} else if (showSql) {
 			logger.info("Sql for batchReplace: " + meta);
 		}
@@ -898,7 +910,7 @@ abstract class MysqlClientOperation {
 		Class<?> tableType = tableObjects[0].getClass();
 		SqlMeta meta = replaceSqlMetaCache.get(tableType);
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
+			throw new MysqlClientException("Not found table class: " + tableType);
 		} else if (showSql) {
 			logger.info("Sql for batchReplace: " + meta);
 		}
@@ -942,7 +954,7 @@ abstract class MysqlClientOperation {
 		Class<?> tableType = tableObjects[0].getClass();
 		SqlMeta meta = mergeSqlMetaCache.get(tableType);
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
+			throw new MysqlClientException("Not found table class: " + tableType);
 		} else if (showSql) {
 			logger.info("Sql for batchMerge: " + meta);
 		}
@@ -972,7 +984,7 @@ abstract class MysqlClientOperation {
 		Class<?> tableType = tableObjects[0].getClass();
 		SqlMeta meta = mergeSqlMetaCache.get(tableType);
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
+			throw new MysqlClientException("Not found table class: " + tableType);
 		} else if (showSql) {
 			logger.info("Sql for batchMerge: " + meta);
 		}
@@ -1015,7 +1027,7 @@ abstract class MysqlClientOperation {
 		Class<?> tableType = tableObjects[0].getClass();
 		SqlMeta meta = deleteSqlMetaCache.get(tableType);
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
+			throw new MysqlClientException("Not found table class: " + tableType);
 		} else if (showSql) {
 			logger.info("Sql for batchDelete: " + meta);
 		}
@@ -1044,7 +1056,7 @@ abstract class MysqlClientOperation {
 
 		SqlMeta meta = deleteSqlMetaCache.get(tableType);
 		if (meta == null) {
-			throw new SQLException("Not table class: " + tableType);
+			throw new MysqlClientException("Not found table class: " + tableType);
 		} else if (showSql) {
 			logger.info("Sql for batchDeleteByKey: " + meta);
 		}
@@ -1078,7 +1090,7 @@ abstract class MysqlClientOperation {
 
 		SqlMeta meta = configSqlMetaCache.get(queryId);
 		if (meta == null) {
-			throw new SQLException("Not sql config: " + queryId);
+			throw new MysqlClientException("Not found sql config: " + queryId);
 		} else if (showSql) {
 			logger.info("Sql for query: " + meta);
 		}
@@ -1115,10 +1127,12 @@ abstract class MysqlClientOperation {
 	protected <T> List<T> queryRange(Connection conn, String queryId, Class<T> elemType, int start, int max, Object params) throws SQLException {
 
 		SqlMeta meta = configSqlMetaCache.get(queryId);
-		String psql = SqlMetaKit.modifyPsqlForLimit(meta, start, max);
 		if (meta == null) {
-			throw new SQLException("Not sql config: " + queryId);
-		} else if (showSql) {
+			throw new MysqlClientException("Not found sql config: " + queryId);
+		}
+
+		String psql = SqlMetaKit.modifyPsqlForLimit(meta, start, max);
+		if (showSql) {
 			logger.info("Sql for queryRange: " + meta.toString(psql));
 		}
 
@@ -1153,10 +1167,10 @@ abstract class MysqlClientOperation {
 	// 对于SQL，不能简单使用LIMIT语法获取第一条记录
 	@SuppressWarnings("unchecked")
 	protected <T> T queryFirst(Connection conn, String queryId, Class<T> elemType, Object params) throws SQLException {
-		SqlMeta meta = configSqlMetaCache.get(queryId);
 
+		SqlMeta meta = configSqlMetaCache.get(queryId);
 		if (meta == null) {
-			throw new SQLException("Not sql config: " + queryId);
+			throw new MysqlClientException("Not found sql config: " + queryId);
 		} else if (showSql) {
 			logger.info("Sql for queryFirst: " + meta);
 		}
@@ -1201,10 +1215,12 @@ abstract class MysqlClientOperation {
 		}
 
 		SqlMeta meta = configSqlMetaCache.get(queryId);
-		String psql = SqlMetaKit.modifyPsqlForPageLimit(meta, start, max, page.getOrderBy(), page.isOrderDesc());
 		if (meta == null) {
-			throw new SQLException("Not sql config: " + queryId);
-		} else if (showSql) {
+			throw new MysqlClientException("Not found sql config: " + queryId);
+		}
+
+		String psql = SqlMetaKit.modifyPsqlForPageLimit(meta, start, max, page.getOrderBy(), page.isOrderDesc());
+		if (showSql) {
 			logger.info("Sql for queryPage: " + meta.toString(psql));
 		}
 
@@ -1268,9 +1284,8 @@ abstract class MysqlClientOperation {
 	protected <T> int execute(Connection conn, String updateId, Object params) throws SQLException {
 
 		SqlMeta meta = configSqlMetaCache.get(updateId);
-
 		if (meta == null) {
-			throw new SQLException("Not sql config: " + updateId);
+			throw new MysqlClientException("Not found sql config: " + updateId);
 		} else if (showSql) {
 			logger.info("Sql for execute: " + meta);
 		}
@@ -1293,9 +1308,8 @@ abstract class MysqlClientOperation {
 	protected <R> R execute(Connection conn, String updateId, Object params, Class<R> generatedKeyType) throws SQLException {
 
 		SqlMeta meta = configSqlMetaCache.get(updateId);
-
 		if (meta == null) {
-			throw new SQLException("Not sql config: " + updateId);
+			throw new MysqlClientException("Not found sql config: " + updateId);
 		} else if (showSql) {
 			logger.info("Sql for execute: " + meta);
 		}
@@ -1325,10 +1339,10 @@ abstract class MysqlClientOperation {
 	}
 
 	protected int[] batchExecute(Connection conn, String updateId, Object[] params) throws SQLException {
-		SqlMeta meta = configSqlMetaCache.get(updateId);
 
+		SqlMeta meta = configSqlMetaCache.get(updateId);
 		if (meta == null) {
-			throw new SQLException("Not sql config: " + updateId);
+			throw new MysqlClientException("Not found sql config: " + updateId);
 		} else if (showSql) {
 			logger.info("Sql for batchExecute: " + meta);
 		}
@@ -1356,9 +1370,8 @@ abstract class MysqlClientOperation {
 	protected <R> R[] batchExecute(Connection conn, String updateId, Object[] params, Class<R> generatedKeyType) throws SQLException {
 
 		SqlMeta meta = configSqlMetaCache.get(updateId);
-
 		if (meta == null) {
-			throw new SQLException("Not sql config: " + updateId);
+			throw new MysqlClientException("Not found sql config: " + updateId);
 		} else if (showSql) {
 			logger.info("Sql for batchExecute: " + meta);
 		}

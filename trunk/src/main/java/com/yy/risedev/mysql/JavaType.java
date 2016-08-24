@@ -20,45 +20,51 @@ import org.springframework.asm.Type;
  */
 public enum JavaType {
 
-	_boolean(boolean.class), //
-	_Boolean(Boolean.class), //
-	_char(char.class), //
-	_Character(Character.class), //
-	_byte(byte.class), //
-	_Byte(Byte.class), //
-	_short(short.class), //
-	_Short(Short.class), //
-	_int(int.class), //
-	_Integer(Integer.class), //
-	_long(long.class), //
-	_Long(Long.class), //
-	_float(float.class), //
-	_Float(Float.class), //
-	_double(double.class), //
-	_Double(Double.class), //
-	_String(String.class), //
-	_BigDecimal(BigDecimal.class), //
-	_BigInteger(BigInteger.class), //
-	_JavaUtilDate(java.util.Date.class), //
-	_Date(Date.class), //
-	_Time(Time.class), //
-	_Timestamp(Timestamp.class), //
-	_bytes(byte[].class), //
-	_Ref(Ref.class), //
-	_URL(URL.class), //
-	_SQLXML(SQLXML.class), //
-	_Blob(Blob.class), //
-	_Clob(Clob.class), //
-	_InputStream(InputStream.class), //
-	_Reader(Reader.class), //
-	_Object(Object.class);
+	_boolean(boolean.class, SqlType.BIT, 1, null), //
+	_Boolean(Boolean.class, SqlType.BIT, 1, null), //
+	_char(char.class, SqlType.CHAR, 1, null), //
+	_Character(Character.class, SqlType.CHAR, 1, null), //
+	_byte(byte.class, SqlType.TINYINT, null, null), //
+	_Byte(Byte.class, SqlType.TINYINT, null, null), //
+	_short(short.class, SqlType.SMALLINT, null, null), //
+	_Short(Short.class, SqlType.SMALLINT, null, null), //
+	_int(int.class, SqlType.INT, null, null), //
+	_Integer(Integer.class, SqlType.INT, null, null), //
+	_long(long.class, SqlType.BIGINT, null, null), //
+	_Long(Long.class, SqlType.BIGINT, null, null), //
+	_float(float.class, SqlType.FLOAT, null, null), //
+	_Float(Float.class, SqlType.FLOAT, null, null), //
+	_double(double.class, SqlType.DOUBLE, null, null), //
+	_Double(Double.class, SqlType.DOUBLE, null, null), //
+	_String(String.class, SqlType.VARCHAR, 255, null), //
+	_BigDecimal(BigDecimal.class, SqlType.DECIMAL, 30, 5), //
+	_BigInteger(BigInteger.class, SqlType.NUMERIC, 30, null), //
+	_JavaUtilDate(java.util.Date.class, SqlType.DATETIME, null, null), //
+	_Date(Date.class, SqlType.DATE, null, null), //
+	_Time(Time.class, SqlType.TIME, null, null), //
+	_Timestamp(Timestamp.class, SqlType.TIMESTAMP, null, null), //
+	_bytes(byte[].class, SqlType.VARBINARY, null, null), //
+	_Ref(Ref.class, SqlType.VARCHAR, 255, null), //
+	_URL(URL.class, SqlType.VARCHAR, 255, null), //
+	_SQLXML(SQLXML.class, SqlType.TEXT, null, null), //
+	_Blob(Blob.class, SqlType.BLOB, null, null), //
+	_Clob(Clob.class, SqlType.TEXT, null, null), //
+	_InputStream(InputStream.class, SqlType.LONGBLOB, null, null), //
+	_Reader(Reader.class, SqlType.LONGTEXT, null, null), //
+	_Object(Object.class, null, null, null);
 
-	final Class<?> clazz;
-	final String descriptor;
+	public final Class<?> clazz;
+	public final String descriptor;
+	public final SqlType defaultSqlType;
+	public final Integer defaultLength;
+	public final Integer defaultDecimals;
 
-	private JavaType(Class<?> clazz) {
+	private JavaType(Class<?> clazz, SqlType defaultSqlType, Integer defaultLength, Integer defaultDecimals) {
 		this.clazz = clazz;
 		this.descriptor = Type.getDescriptor(clazz);
+		this.defaultSqlType = defaultSqlType;
+		this.defaultLength = defaultLength;
+		this.defaultDecimals = defaultDecimals;
 	}
 
 	public static JavaType match(String descriptor) {

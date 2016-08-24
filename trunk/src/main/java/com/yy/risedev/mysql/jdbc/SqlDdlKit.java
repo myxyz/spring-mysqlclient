@@ -33,7 +33,7 @@ public class SqlDdlKit extends SqlKit {
 	private static final Log logger = LogFactory.getLog(SqlDdlKit.class);
 
 	public static void processUpdateTable(Connection conn, Collection<ClassMetaInfo> tableMetaInfos) throws SQLException {
-		//避免错误,表名都转成大写比较
+		// 避免错误,表名都转成大写比较
 		Set<String> tableSet = getUpperCaseTableNames(conn);
 		for (ClassMetaInfo classMetaInfo : tableMetaInfos) {
 			if (tableSet.contains(classMetaInfo.tableName.toUpperCase())) {
@@ -140,7 +140,7 @@ public class SqlDdlKit extends SqlKit {
 
 	}
 
-	static String getColumnName(FieldMetaInfo fieldMetaInfo, ColumnAnnotation columnAnnotation) {
+	static final String getColumnName(FieldMetaInfo fieldMetaInfo, ColumnAnnotation columnAnnotation) {
 		String name = columnAnnotation.name;
 		if (AsmKit.isEmpty(name)) {
 			name = fieldMetaInfo.name;
@@ -148,26 +148,26 @@ public class SqlDdlKit extends SqlKit {
 		return name;
 	}
 
-	static SqlType getColumnSqlType(FieldMetaInfo fieldMetaInfo, ColumnAnnotation columnAnnotation) {
+	static final SqlType getColumnSqlType(ColumnAnnotation columnAnnotation, JavaType javaType) {
 		SqlType type = columnAnnotation.type;
 		if (type == null) {
-			type = defaultSqlType4JavaType(fieldMetaInfo.descriptor);
+			type = javaType.defaultSqlType;
 		}
 		return type;
 	}
 
-	static Integer getColumnLength(ColumnAnnotation columnAnnotation, SqlType sqlType) {
+	static final Integer getColumnLength(ColumnAnnotation columnAnnotation, JavaType javaType) {
 		Integer length = columnAnnotation.length;
 		if (length == null) {
-			length = defaultSqlTypeLength(sqlType);
+			length = javaType.defaultLength;
 		}
 		return length;
 	}
 
-	static Integer getColumnDecimal(ColumnAnnotation columnAnnotation, SqlType sqlType) {
+	static final Integer getColumnDecimal(ColumnAnnotation columnAnnotation, JavaType javaType) {
 		Integer decimals = columnAnnotation.decimals;
 		if (decimals == null) {
-			decimals = defaultSqlTypeDecimal(sqlType);
+			decimals = javaType.defaultDecimals;
 		}
 		return decimals;
 	}
@@ -420,13 +420,17 @@ public class SqlDdlKit extends SqlKit {
 		StringBuilder cols = new StringBuilder(128);
 
 		String name = getColumnName(fieldMetaInfo, columnAnnotation);
-		SqlType sqlType = getColumnSqlType(fieldMetaInfo, columnAnnotation);
+		JavaType javaType = JavaType.match(fieldMetaInfo.descriptor);
+		SqlType sqlType = getColumnSqlType(columnAnnotation, javaType);
+		if (sqlType == null) {
+			throw new MysqlClientException("Not specify sqlType for field: " + fieldMetaInfo.name);
+		}
 		cols.append(identifier(name)).append(" ").append(sqlType.sqlValue);
 
-		Integer length = getColumnLength(columnAnnotation, sqlType);
+		Integer length = getColumnLength(columnAnnotation, javaType);
 		if (length != null) {
 			cols.append("(").append(length);
-			Integer decimals = getColumnDecimal(columnAnnotation, sqlType);
+			Integer decimals = getColumnDecimal(columnAnnotation, javaType);
 			if (decimals != null) {
 				cols.append(",").append(decimals);
 			}
@@ -456,6 +460,9 @@ public class SqlDdlKit extends SqlKit {
 		case VARCHAR:
 		case VARCHAR_BINARY:
 			return 255;
+		case NUMERIC:
+		case DECIMAL:
+			return 30;
 		default:
 			return null;
 		}
@@ -464,6 +471,8 @@ public class SqlDdlKit extends SqlKit {
 
 	static Integer defaultSqlTypeDecimal(SqlType sqlType) {
 		switch (sqlType) {
+		case DECIMAL:
+			return 5;
 		default:
 			return null;
 		}

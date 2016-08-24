@@ -263,7 +263,7 @@ public abstract class JdbcAction {
 			}
 		} else {
 			for (int p : pos) {
-				pstmt.setBytes(p, value.toByteArray());
+				pstmt.setBigDecimal(p, new BigDecimal(value));
 			}
 		}
 	}
@@ -522,8 +522,8 @@ public abstract class JdbcAction {
 	}
 
 	public static final BigInteger get_BigInteger(ResultSet rs, Integer pos) throws SQLException {
-		byte[] val = rs.getBytes(pos);
-		return val == null ? null : new BigInteger(val);
+		BigDecimal val = rs.getBigDecimal(pos);
+		return val == null ? null : val.toBigInteger();
 	}
 
 	public static final Date get_Date(ResultSet rs, Integer pos) throws SQLException {

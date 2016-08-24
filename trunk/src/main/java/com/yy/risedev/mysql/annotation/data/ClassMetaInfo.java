@@ -28,4 +28,8 @@ public class ClassMetaInfo {
 	public List<String> keys; // primary key
 	public List<String> columns; // column name
 
+	/*************************************
+	 * 辅助属性,基类的数量
+	 *************************************/
+	public int hierarchies = 1;
 }

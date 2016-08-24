@@ -7,4 +7,5 @@ public class FieldMetaInfo {
 	public String signature;
 	public ColumnAnnotation columnAnnotation;
 
+	public int order;
 }
