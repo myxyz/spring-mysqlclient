@@ -103,7 +103,7 @@ public final class SqlMetaKit extends SqlKit {
 		return meta;
 	}
 
-	public static SqlMeta genSelectListSqlMeta(ClassMetaInfo classMetaInfo) {
+	public static SqlMeta genSelectAllSqlMeta(ClassMetaInfo classMetaInfo) {
 
 		if (classMetaInfo.tableAnnotation == null) {
 			return null;

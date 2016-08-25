@@ -32,10 +32,28 @@ public class SqlDdlKit extends SqlKit {
 
 	private static final Log logger = LogFactory.getLog(SqlDdlKit.class);
 
-	public static void processUpdateTable(Connection conn, Collection<ClassMetaInfo> tableMetaInfos) throws SQLException {
+	public static void processUpdateTable(Connection conn, Map<String, ClassMetaInfo> tableMetaInfoMap) throws SQLException {
+
+		// 外键存在依赖
+		LinkedList<String> depends = new LinkedList<String>();
+		String name;
+		for (ClassMetaInfo classMetaInfo : tableMetaInfoMap.values()) {
+			name = classMetaInfo.tableName;
+			depends.remove(name);
+			depends.addFirst(name);
+			if (classMetaInfo.foreignKeyAnnotation != null) {
+				for (ReferenceAnnotation ref : classMetaInfo.foreignKeyAnnotation) {
+					name = ref.targetTable;
+					depends.remove(name);
+					depends.addFirst(name);
+				}
+			}
+		}
+
 		// 避免错误,表名都转成大写比较
 		Set<String> tableSet = getUpperCaseTableNames(conn);
-		for (ClassMetaInfo classMetaInfo : tableMetaInfos) {
+		for (String table : depends) {
+			ClassMetaInfo classMetaInfo = tableMetaInfoMap.get(table);
 			if (tableSet.contains(classMetaInfo.tableName.toUpperCase())) {
 				logger.info("Check Table: " + classMetaInfo.tableName);
 				checkAndAddColumns(conn, classMetaInfo, classMetaInfo.tableName);
@@ -472,7 +490,7 @@ public class SqlDdlKit extends SqlKit {
 		case NUMERIC:
 			return defaultValue;
 		default:
-			//其他类型如果首尾不以单引结束则自动加上
+			// 其他类型如果首尾不以单引结束则自动加上
 			StringBuilder sb = new StringBuilder(defaultValue.length() + 4);
 			sb.append(defaultValue);
 			if (sb.charAt(0) != '\'') {

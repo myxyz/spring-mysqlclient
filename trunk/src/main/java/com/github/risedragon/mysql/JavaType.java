@@ -16,7 +16,10 @@ import java.sql.Timestamp;
 import org.springframework.asm.Type;
 
 /**
- * java属性类型
+ * The scalar type supported by mysqlClient, and its default sqlType, length and decimals for creating table.
+ * 
+ * @author hezhaowu
+ * @since 0.9.1
  */
 public enum JavaType {
 

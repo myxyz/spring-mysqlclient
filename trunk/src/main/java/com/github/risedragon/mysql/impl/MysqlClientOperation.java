@@ -441,7 +441,7 @@ abstract class MysqlClientOperation {
 
 	}
 
-	protected <T> void select2(Connection conn, T tableObject) throws SQLException {
+	protected <T> T select2(Connection conn, T tableObject) throws SQLException {
 
 		Class<?> tableType = tableObject.getClass();
 		SqlMeta meta = selectSqlMetaCache.get(tableType);
@@ -464,7 +464,9 @@ abstract class MysqlClientOperation {
 			}
 			if (rs.next()) {
 				action.getResult2(rs, meta.labels, tableObject);
+				return tableObject;
 			}
+			return null;
 		} finally {
 			if (rs != null) {
 				rs.close();
@@ -626,13 +628,13 @@ abstract class MysqlClientOperation {
 	@SuppressWarnings("unchecked")
 	protected <T> void selectPage(Connection conn, Class<T> tableType, Page<T> page) throws SQLException {
 
-		int start = page.getStart();
-		if (start < 0) {
-			start = 0;
+		int offset = page.getOffset();
+		if (offset < 0) {
+			offset = 0;
 		}
-		int max = page.getMax();
-		if (max <= 0) {
-			max = Integer.MAX_VALUE;
+		int count = page.getCount();
+		if (count <= 0) {
+			count = Integer.MAX_VALUE;
 		}
 
 		SqlMeta meta = selectAllSqlMetaCache.get(tableType);
@@ -640,7 +642,7 @@ abstract class MysqlClientOperation {
 			throw new MysqlClientException("Not found table class: " + tableType);
 		}
 
-		String psql = SqlMetaKit.modifyPsqlForPageLimit(meta, start, max, page.getOrderBy(), page.isOrderDesc());
+		String psql = SqlMetaKit.modifyPsqlForPageLimit(meta, offset, count, page.getOrderBy(), page.isOrderDesc());
 		if (showSql) {
 			logger.info("Sql for selectPage: " + meta.toString(psql));
 		}
@@ -669,8 +671,8 @@ abstract class MysqlClientOperation {
 			}
 		}
 
-		if ((start == 0 && max == Integer.MAX_VALUE) || (page.getData().size() < max)) {
-			page.setTotal(page.getData().size() + start); // 加上起点
+		if ((offset == 0 && count == Integer.MAX_VALUE) || (page.getData().size() < count)) {
+			page.setTotal(page.getData().size() + offset); // 加上起点
 		} else {
 			try {
 				pstmt = conn.prepareStatement(SqlMetaKit.modifyPsqlForPageTotal(meta));
@@ -1205,13 +1207,13 @@ abstract class MysqlClientOperation {
 	@SuppressWarnings("unchecked")
 	protected <T> void queryPage(Connection conn, String queryId, Class<T> elemType, Page<T> page, Object params) throws SQLException {
 
-		int start = page.getStart();
-		if (start < 0) {
-			start = 0;
+		int offset = page.getOffset();
+		if (offset < 0) {
+			offset = 0;
 		}
-		int max = page.getMax();
-		if (max <= 0) {
-			max = Integer.MAX_VALUE;
+		int count = page.getCount();
+		if (count <= 0) {
+			count = Integer.MAX_VALUE;
 		}
 
 		SqlMeta meta = configSqlMetaCache.get(queryId);
@@ -1219,7 +1221,7 @@ abstract class MysqlClientOperation {
 			throw new MysqlClientException("Not found sql config: " + queryId);
 		}
 
-		String psql = SqlMetaKit.modifyPsqlForPageLimit(meta, start, max, page.getOrderBy(), page.isOrderDesc());
+		String psql = SqlMetaKit.modifyPsqlForPageLimit(meta, offset, count, page.getOrderBy(), page.isOrderDesc());
 		if (showSql) {
 			logger.info("Sql for queryPage: " + meta.toString(psql));
 		}
@@ -1255,8 +1257,8 @@ abstract class MysqlClientOperation {
 			}
 		}
 
-		if ((start == 0 && max == Integer.MAX_VALUE) || (page.getData().size() < max)) {
-			page.setTotal(page.getData().size() + start); // 加上起点
+		if ((offset == 0 && count == Integer.MAX_VALUE) || (page.getData().size() < count)) {
+			page.setTotal(page.getData().size() + offset); // 加上起点
 		} else {
 			try {
 				pstmt = conn.prepareStatement(SqlMetaKit.modifyPsqlForPageTotal(meta));
@@ -1440,7 +1442,7 @@ abstract class MysqlClientOperation {
 							classMetaInfoMap.put(AsmKit.getClassNameFromInternalName(classMetaInfo.internalName), classMetaInfo);
 							if (classMetaInfo.tableAnnotation != null) {
 								if (logger.isInfoEnabled()) {
-									logger.info(String.format("Load @table：%s %s", classMetaInfo.tableName, classMetaInfo.columns));
+									logger.info(String.format("Load @Table：%s %s", classMetaInfo.tableName, classMetaInfo.columns));
 								}
 								if ((tableMetaInfo = tableMetaInfoMap.put(classMetaInfo.tableName, classMetaInfo)) != null) {
 									throw new MysqlClientException("Duplicate @Table：" + classMetaInfo.tableName + ", please check class:" + classMetaInfo.internalName + "," + tableMetaInfo.internalName);
@@ -1467,7 +1469,7 @@ abstract class MysqlClientOperation {
 									classMetaInfoMap.put(className, classMetaInfo);
 									if (classMetaInfo.tableAnnotation != null) {
 										if (logger.isInfoEnabled()) {
-											logger.info(String.format("Load @table：%s %s", classMetaInfo.tableName, classMetaInfo.columns));
+											logger.info(String.format("Load @Table：%s %s", classMetaInfo.tableName, classMetaInfo.columns));
 										}
 										if ((tableMetaInfo = tableMetaInfoMap.put(classMetaInfo.tableName, classMetaInfo)) != null) {
 											throw new MysqlClientException("Duplicate @Table：" + classMetaInfo.tableName + ", please check class:" + classMetaInfo.internalName + "," + tableMetaInfo.internalName);
@@ -1491,8 +1493,8 @@ abstract class MysqlClientOperation {
 								sb.append(configMetaInfo.namespace).append('.');// 没有namespace,自动忽略
 							}
 							key = sb.append(entry.getKey()).toString();
-							if (!sqlMap.containsKey(key)) {
-								sqlMap.put(key, entry.getValue());
+							if (sqlMap.put(key, entry.getValue()) != null) {
+								throw new MysqlClientException("Duplicate sql id：" + key);
 							}
 						}
 					}
@@ -1509,13 +1511,15 @@ abstract class MysqlClientOperation {
 
 			setJdbcAction(clazz, AsmKit.newJdbcAction(classMetaInfo));
 
-			selectAllSqlMetaCache.put(clazz, SqlMetaKit.genSelectListSqlMeta(classMetaInfo));
-			selectSqlMetaCache.put(clazz, SqlMetaKit.genSelectSqlMeta(classMetaInfo));
-			insertSqlMetaCache.put(clazz, SqlMetaKit.genInsertSqlMeta(classMetaInfo));
-			updateSqlMetaCache.put(clazz, SqlMetaKit.genUpdateSqlMeta(classMetaInfo));
-			replaceSqlMetaCache.put(clazz, SqlMetaKit.genReplaceSqlMeta(classMetaInfo));
-			mergeSqlMetaCache.put(clazz, SqlMetaKit.genMergeSqlMeta(classMetaInfo));
-			deleteSqlMetaCache.put(clazz, SqlMetaKit.genDeleteSqlMeta(classMetaInfo));
+			if (classMetaInfo.tableAnnotation != null) {
+				selectAllSqlMetaCache.put(clazz, SqlMetaKit.genSelectAllSqlMeta(classMetaInfo));
+				selectSqlMetaCache.put(clazz, SqlMetaKit.genSelectSqlMeta(classMetaInfo));
+				insertSqlMetaCache.put(clazz, SqlMetaKit.genInsertSqlMeta(classMetaInfo));
+				updateSqlMetaCache.put(clazz, SqlMetaKit.genUpdateSqlMeta(classMetaInfo));
+				replaceSqlMetaCache.put(clazz, SqlMetaKit.genReplaceSqlMeta(classMetaInfo));
+				mergeSqlMetaCache.put(clazz, SqlMetaKit.genMergeSqlMeta(classMetaInfo));
+				deleteSqlMetaCache.put(clazz, SqlMetaKit.genDeleteSqlMeta(classMetaInfo));
+			}
 
 		}
 		// 从sql解析出SqlMeta并存入Repository
@@ -1525,22 +1529,40 @@ abstract class MysqlClientOperation {
 
 		if (updateTable) {
 			// 从classMetaInfo解析出ddlMeta,并更新表结构
-			SqlDdlKit.processUpdateTable(conn, tableMetaInfoMap.values());
+			if (tableMetaInfoMap.size() > 0) {
+				SqlDdlKit.processUpdateTable(conn, tableMetaInfoMap);
+			}
 		}
 
 		if (checkConfig) {
-			SqlDdlKit.processCheckConfig(conn, selectAllSqlMetaCache.values());
-			SqlDdlKit.processCheckConfig(conn, selectSqlMetaCache.values());
-			SqlDdlKit.processCheckConfig(conn, insertSqlMetaCache.values());
-			SqlDdlKit.processCheckConfig(conn, updateSqlMetaCache.values());
-			SqlDdlKit.processCheckConfig(conn, replaceSqlMetaCache.values());
-			SqlDdlKit.processCheckConfig(conn, mergeSqlMetaCache.values());
-			SqlDdlKit.processCheckConfig(conn, deleteSqlMetaCache.values());
-			SqlDdlKit.processCheckConfig(conn, configSqlMetaCache.values());
+			if (selectAllSqlMetaCache.size() > 0) {
+				SqlDdlKit.processCheckConfig(conn, selectAllSqlMetaCache.values());
+			}
+			if (selectSqlMetaCache.size() > 0) {
+				SqlDdlKit.processCheckConfig(conn, selectSqlMetaCache.values());
+			}
+			if (insertSqlMetaCache.size() > 0) {
+				SqlDdlKit.processCheckConfig(conn, insertSqlMetaCache.values());
+			}
+			if (updateSqlMetaCache.size() > 0) {
+				SqlDdlKit.processCheckConfig(conn, updateSqlMetaCache.values());
+			}
+			if (replaceSqlMetaCache.size() > 0) {
+				SqlDdlKit.processCheckConfig(conn, replaceSqlMetaCache.values());
+			}
+			if (mergeSqlMetaCache.size() > 0) {
+				SqlDdlKit.processCheckConfig(conn, mergeSqlMetaCache.values());
+			}
+			if (deleteSqlMetaCache.size() > 0) {
+				SqlDdlKit.processCheckConfig(conn, deleteSqlMetaCache.values());
+			}
+			if (configSqlMetaCache.size() > 0) {
+				SqlDdlKit.processCheckConfig(conn, configSqlMetaCache.values());
+			}
 		}
 
 		if (logger.isInfoEnabled()) {
-			logger.info(String.format("mysqlclient initialization successful, loading %d Tables, %d Metas, and %d SQLs", tableMetaInfoMap.size(), classMetaInfoMap.size(), sqlMap.size()));
+			logger.info(String.format("Mysqlclient initialization successful, loading %d Tables, %d Metas, and %d SQLs", tableMetaInfoMap.size(), classMetaInfoMap.size(), sqlMap.size()));
 		}
 	}
 

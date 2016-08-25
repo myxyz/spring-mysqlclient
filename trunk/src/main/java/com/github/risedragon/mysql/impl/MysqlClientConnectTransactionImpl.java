@@ -206,11 +206,11 @@ public class MysqlClientConnectTransactionImpl extends MysqlClientOperation impl
 	}
 
 	@Override
-	public <T> void select2(T tableObject) throws SQLException {
+	public <T> T select2(T tableObject) throws SQLException {
 		Connection conn = null;
 		try {
 			conn = dataSource.getConnection();
-			select2(conn, tableObject);
+			return select2(conn, tableObject);
 		} finally {
 			if (conn != null) {
 				conn.close();
@@ -626,7 +626,7 @@ public class MysqlClientConnectTransactionImpl extends MysqlClientOperation impl
 	}
 
 	@Override
-	public <R> R[] batchExecute(String updateId, Object[] params, Class<R> generatedKeyType) throws SQLException {
+	public <T, R> R[] batchExecute(String updateId, T[] params, Class<R> generatedKeyType) throws SQLException {
 		Connection conn = null;
 		boolean done = false;
 		try {

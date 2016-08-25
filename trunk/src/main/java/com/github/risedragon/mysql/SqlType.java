@@ -3,7 +3,10 @@ package com.github.risedragon.mysql;
 import java.sql.Types;
 
 /**
- * 表字段类型
+ * The mysql data type supported by mysqlClient
+ * 
+ * @author hezhaowu
+ * @since 0.9.1
  */
 public enum SqlType {
 

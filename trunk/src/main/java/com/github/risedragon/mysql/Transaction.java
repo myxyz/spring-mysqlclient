@@ -3,20 +3,16 @@ package com.github.risedragon.mysql;
 import java.sql.SQLException;
 import java.sql.Savepoint;
 
+/**
+ * The connection transaction interface
+ * 
+ * @author hezhaowu
+ * @since 0.9.1
+ */
 public interface Transaction extends MysqlClient {
 
-	/**
-	 * 事务提交后自动释放Connection
-	 * 
-	 * @throws SQLException
-	 */
 	void commit() throws SQLException;
 
-	/**
-	 * 事务回滚后自动释放Connection
-	 * 
-	 * @throws SQLException
-	 */
 	void rollback() throws SQLException;
 
 	void rollback(Savepoint savepoint) throws SQLException;

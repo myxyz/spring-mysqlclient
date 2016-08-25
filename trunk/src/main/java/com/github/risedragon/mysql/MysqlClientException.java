@@ -1,5 +1,11 @@
 package com.github.risedragon.mysql;
 
+/**
+ * The MySQL client exception thrown to indicate an execution error
+ * 
+ * @author hezhaowu
+ * @since 0.9.1
+ */
 public class MysqlClientException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;

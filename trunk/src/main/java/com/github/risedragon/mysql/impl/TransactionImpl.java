@@ -88,8 +88,8 @@ final class TransactionImpl implements Transaction {
 	}
 
 	@Override
-	public <T> void select2(T tableObject) throws SQLException {
-		proxy.select2(conn, tableObject);
+	public <T> T select2(T tableObject) throws SQLException {
+		return proxy.select2(conn, tableObject);
 	}
 
 	@Override
@@ -208,7 +208,7 @@ final class TransactionImpl implements Transaction {
 	}
 
 	@Override
-	public <R> R[] batchExecute(String updateId, Object[] params, Class<R> generatedKeyType) throws SQLException {
+	public <T, R> R[] batchExecute(String updateId, T[] params, Class<R> generatedKeyType) throws SQLException {
 		return proxy.batchExecute(conn, updateId, params, generatedKeyType);
 	}
 

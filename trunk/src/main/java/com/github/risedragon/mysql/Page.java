@@ -2,10 +2,16 @@ package com.github.risedragon.mysql;
 
 import java.util.List;
 
+/**
+ * Data structure for paging query.
+ * 
+ * @author hezhaowu
+ * @since 0.9.1
+ */
 public class Page<T> {
 
-	int start;
-	int max;
+	int offset;
+	int count;
 
 	String orderBy;
 	boolean orderDesc;
@@ -22,26 +28,26 @@ public class Page<T> {
 	}
 
 	public Page(int start, int max, String orderBy, boolean orderDesc) {
-		this.start = start;
-		this.max = max;
+		this.offset = start;
+		this.count = max;
 		this.orderBy = orderBy;
 		this.orderDesc = orderDesc;
 	}
 
-	public int getStart() {
-		return start;
+	public int getOffset() {
+		return offset;
 	}
 
-	public void setStart(int start) {
-		this.start = start;
+	public void setOffset(int offset) {
+		this.offset = offset;
 	}
 
-	public int getMax() {
-		return max;
+	public int getCount() {
+		return count;
 	}
 
-	public void setMax(int max) {
-		this.max = max;
+	public void setCount(int count) {
+		this.count = count;
 	}
 
 	public String getOrderBy() {

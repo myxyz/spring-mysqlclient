@@ -232,11 +232,11 @@ public class MysqlClientPlatformTransactionImpl extends MysqlClientOperation imp
 	}
 
 	@Override
-	public <T> void select2(T tableObject) throws SQLException {
+	public <T> T select2(T tableObject) throws SQLException {
 
 		Connection conn = DataSourceUtils.getConnection(dataSource);
 		try {
-			select2(conn, tableObject);
+			return select2(conn, tableObject);
 		} catch (SQLException ex) {
 			// Release Connection early, to avoid potential connection pool deadlock
 			// in the case when the exception translator hasn't been initialized yet.
@@ -674,7 +674,7 @@ public class MysqlClientPlatformTransactionImpl extends MysqlClientOperation imp
 	}
 
 	@Override
-	public <R> R[] batchExecute(String updateId, Object[] params, Class<R> generatedKeyType) throws SQLException {
+	public <T, R> R[] batchExecute(String updateId, T[] params, Class<R> generatedKeyType) throws SQLException {
 		Connection conn = DataSourceUtils.getConnection(dataSource);
 		try {
 			if (conn.getAutoCommit()) {
