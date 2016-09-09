@@ -65,27 +65,10 @@ public abstract class JdbcAction {
 
 	public abstract void setParam(PreparedStatement pstmt, Map<String, int[]> params, Object obj) throws SQLException;
 
-	/**
-	 * @param rs
-	 * @param columns,
-	 *            字段名及位置
-	 * @return
-	 * @throws SQLException
-	 */
 	public abstract Object getResult(ResultSet rs, Map<String, Integer> types) throws SQLException;
 
-	/**
-	 * @param rs
-	 * @param columns,
-	 *            字段名及位置
-	 * @return
-	 * @throws SQLException
-	 */
 	public abstract void getResult2(ResultSet rs, Map<String, Integer> types, Object obj) throws SQLException;
 
-	/************************************
-	 * 辅助set方法
-	 ************************************/
 	public static final void set_boolean(PreparedStatement pstmt, int[] pos, boolean value) throws SQLException {
 		for (int p : pos) {
 			pstmt.setBoolean(p, value);
@@ -419,7 +402,6 @@ public abstract class JdbcAction {
 				pstmt.setNull(p, Types.OTHER);
 			}
 		} else {
-			// 自定义类型
 			ActionMeta setter = ActionMetaCache.get(value.getClass());
 			if (setter != null) {
 				setter.set(pstmt, pos, value);
@@ -431,9 +413,6 @@ public abstract class JdbcAction {
 		}
 	}
 
-	/************************************
-	 * 辅助get方法
-	 ************************************/
 	public static final boolean get_boolean(ResultSet rs, Integer pos) throws SQLException {
 		return rs.getBoolean(pos);
 	}
@@ -576,7 +555,7 @@ public abstract class JdbcAction {
 
 	@SuppressWarnings("unchecked")
 	public static final <T> T get_Object(ResultSet rs, Integer pos, Class<T> type) throws SQLException {
-		// 自定义类型
+
 		ActionMeta getter = ActionMetaCache.get(type);
 		if (getter != null) {
 			return getter.get(rs, pos, type);
@@ -612,7 +591,6 @@ public abstract class JdbcAction {
 
 	public static void setParamByType(PreparedStatement pstmt, int[] pos, Object param) throws SQLException {
 
-		// 若参数为空
 		if (param == null) {
 			for (int p : pos) {
 				pstmt.setNull(p, Types.OTHER);

@@ -1,19 +1,3 @@
-/*
- * Copyright 2002-2014 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.github.risedragon.spring.transaction;
 
 import java.sql.Connection;
@@ -31,41 +15,12 @@ import org.springframework.util.Assert;
 
 import com.github.risedragon.mysql.MysqlClientException;
 
-/**
- * Helper class that provides static methods for obtaining JDBC Connections from a {@link javax.sql.DataSource}. Includes special support for Spring-managed transactional Connections, e.g. managed by {@link DataSourceTransactionManager} or {@link org.springframework.transaction.jta.JtaTransactionManager}.
- *
- * <p>
- * Used internally by Spring's {@link org.springframework.jdbc.core.JdbcTemplate}, Spring's JDBC operation objects and the JDBC {@link DataSourceTransactionManager}. Can also be used directly in application code.
- *
- * @author Rod Johnson
- * @author Juergen Hoeller
- * @see #getConnection
- * @see #releaseConnection
- * @see DataSourceTransactionManager
- * @see org.springframework.transaction.jta.JtaTransactionManager
- * @see org.springframework.transaction.support.TransactionSynchronizationManager
- */
 public abstract class DataSourceUtils {
 
-	/**
-	 * Order value for TransactionSynchronization objects that clean up JDBC Connections.
-	 */
 	public static final int CONNECTION_SYNCHRONIZATION_ORDER = 1000;
 
 	private static final Log logger = LogFactory.getLog(DataSourceUtils.class);
 
-	/**
-	 * Obtain a Connection from the given DataSource. Translates SQLExceptions into the Spring hierarchy of unchecked generic data access exceptions, simplifying calling code and making any exception that is thrown more meaningful.
-	 * <p>
-	 * Is aware of a corresponding Connection bound to the current thread, for example when using {@link DataSourceTransactionManager}. Will bind a Connection to the thread if transaction synchronization is active, e.g. when running within a {@link org.springframework.transaction.jta.JtaTransactionManager JTA} transaction).
-	 * 
-	 * @param dataSource
-	 *            the DataSource to obtain Connections from
-	 * @return a JDBC Connection from the given DataSource
-	 * @throws org.springframework.jdbc.CannotGetJdbcConnectionException
-	 *             if the attempt to get a Connection failed
-	 * @see #releaseConnection
-	 */
 	public static Connection getConnection(DataSource dataSource) throws MysqlClientException {
 		try {
 			return doGetConnection(dataSource);
@@ -74,20 +29,6 @@ public abstract class DataSourceUtils {
 		}
 	}
 
-	/**
-	 * Actually obtain a JDBC Connection from the given DataSource. Same as {@link #getConnection}, but throwing the original SQLException.
-	 * <p>
-	 * Is aware of a corresponding Connection bound to the current thread, for example when using {@link DataSourceTransactionManager}. Will bind a Connection to the thread if transaction synchronization is active (e.g. if in a JTA transaction).
-	 * <p>
-	 * Directly accessed by {@link TransactionAwareDataSourceProxy}.
-	 * 
-	 * @param dataSource
-	 *            the DataSource to obtain Connections from
-	 * @return a JDBC Connection from the given DataSource
-	 * @throws SQLException
-	 *             if thrown by JDBC methods
-	 * @see #doReleaseConnection
-	 */
 	public static Connection doGetConnection(DataSource dataSource) throws SQLException {
 		Assert.notNull(dataSource, "No DataSource specified");
 
@@ -101,11 +42,10 @@ public abstract class DataSourceUtils {
 			return conHolder.getConnection();
 		}
 		// Else we either got no holder or an empty thread-bound holder here.
+		logger.debug("Fetching JDBC Connection from DataSource");
+		Connection con = dataSource.getConnection();
 
 		if (TransactionSynchronizationManager.isSynchronizationActive()) {
-
-			Connection con = dataSource.getConnection();
-
 			logger.debug("Registering transaction synchronization for JDBC Connection");
 			// Use same Connection for further JDBC actions within the transaction.
 			// Thread-bound object will get removed by synchronization at transaction completion.
@@ -121,26 +61,12 @@ public abstract class DataSourceUtils {
 			if (holderToUse != conHolder) {
 				TransactionSynchronizationManager.bindResource(dataSource, holderToUse);
 			}
-
-			return con;
-		} else {
-			throw new MysqlClientException("Operation is not valid without active transaction");
 		}
+
+		return con;
 
 	}
 
-	/**
-	 * Prepare the given Connection with the given transaction semantics.
-	 * 
-	 * @param con
-	 *            the Connection to prepare
-	 * @param definition
-	 *            the transaction definition to apply
-	 * @return the previous isolation level, if any
-	 * @throws SQLException
-	 *             if thrown by JDBC methods
-	 * @see #resetConnectionAfterTransaction
-	 */
 	public static Integer prepareConnectionForTransaction(Connection con, TransactionDefinition definition) throws SQLException {
 
 		Assert.notNull(con, "No Connection specified");
@@ -193,15 +119,6 @@ public abstract class DataSourceUtils {
 		return previousIsolationLevel;
 	}
 
-	/**
-	 * Reset the given Connection after a transaction, regarding read-only flag and isolation level.
-	 * 
-	 * @param con
-	 *            the Connection to reset
-	 * @param previousIsolationLevel
-	 *            the isolation level to restore, if any
-	 * @see #prepareConnectionForTransaction
-	 */
 	public static void resetConnectionAfterTransaction(Connection con, Integer previousIsolationLevel) {
 		Assert.notNull(con, "No Connection specified");
 		try {
@@ -225,15 +142,6 @@ public abstract class DataSourceUtils {
 		}
 	}
 
-	/**
-	 * Determine whether the given JDBC Connection is transactional, that is, bound to the current thread by Spring's transaction facilities.
-	 * 
-	 * @param con
-	 *            the Connection to check
-	 * @param dataSource
-	 *            the DataSource that the Connection was obtained from (may be {@code null})
-	 * @return whether the Connection is transactional
-	 */
 	public static boolean isConnectionTransactional(Connection con, DataSource dataSource) {
 		if (dataSource == null) {
 			return false;
@@ -242,34 +150,10 @@ public abstract class DataSourceUtils {
 		return (conHolder != null && connectionEquals(conHolder, con));
 	}
 
-	/**
-	 * Apply the current transaction timeout, if any, to the given JDBC Statement object.
-	 * 
-	 * @param stmt
-	 *            the JDBC Statement object
-	 * @param dataSource
-	 *            the DataSource that the Connection was obtained from
-	 * @throws SQLException
-	 *             if thrown by JDBC methods
-	 * @see java.sql.Statement#setQueryTimeout
-	 */
 	public static void applyTransactionTimeout(Statement stmt, DataSource dataSource) throws SQLException {
 		applyTimeout(stmt, dataSource, -1);
 	}
 
-	/**
-	 * Apply the specified timeout - overridden by the current transaction timeout, if any - to the given JDBC Statement object.
-	 * 
-	 * @param stmt
-	 *            the JDBC Statement object
-	 * @param dataSource
-	 *            the DataSource that the Connection was obtained from
-	 * @param timeout
-	 *            the timeout to apply (or 0 for no timeout outside of a transaction)
-	 * @throws SQLException
-	 *             if thrown by JDBC methods
-	 * @see java.sql.Statement#setQueryTimeout
-	 */
 	public static void applyTimeout(Statement stmt, DataSource dataSource, int timeout) throws SQLException {
 		Assert.notNull(stmt, "No Statement specified");
 		Assert.notNull(dataSource, "No DataSource specified");
@@ -283,15 +167,6 @@ public abstract class DataSourceUtils {
 		}
 	}
 
-	/**
-	 * Close the given Connection, obtained from the given DataSource, if it is not managed externally (that is, not bound to the thread).
-	 * 
-	 * @param con
-	 *            the Connection to close if necessary (if this is {@code null}, the call will be ignored)
-	 * @param dataSource
-	 *            the DataSource that the Connection was obtained from (may be {@code null})
-	 * @see #getConnection
-	 */
 	public static void releaseConnection(Connection con, DataSource dataSource) {
 		try {
 			doReleaseConnection(con, dataSource);
@@ -302,19 +177,6 @@ public abstract class DataSourceUtils {
 		}
 	}
 
-	/**
-	 * Actually close the given Connection, obtained from the given DataSource. Same as {@link #releaseConnection}, but throwing the original SQLException.
-	 * <p>
-	 * Directly accessed by {@link TransactionAwareDataSourceProxy}.
-	 * 
-	 * @param con
-	 *            the Connection to close if necessary (if this is {@code null}, the call will be ignored)
-	 * @param dataSource
-	 *            the DataSource that the Connection was obtained from (may be {@code null})
-	 * @throws SQLException
-	 *             if thrown by JDBC methods
-	 * @see #doGetConnection
-	 */
 	public static void doReleaseConnection(Connection con, DataSource dataSource) throws SQLException {
 		if (con == null) {
 			return;
@@ -331,16 +193,6 @@ public abstract class DataSourceUtils {
 		con.close();
 	}
 
-	/**
-	 * Determine whether the given two Connections are equal, asking the target Connection in case of a proxy. Used to detect equality even if the user passed in a raw target Connection while the held one is a proxy.
-	 * 
-	 * @param conHolder
-	 *            the ConnectionHolder for the held Connection (potentially a proxy)
-	 * @param passedInCon
-	 *            the Connection passed-in by the user (potentially a target Connection without proxy)
-	 * @return whether the given Connections are equal
-	 * @see #getTargetConnection
-	 */
 	private static boolean connectionEquals(ConnectionHolder conHolder, Connection passedInCon) {
 		if (!conHolder.hasConnection()) {
 			return false;
@@ -351,11 +203,6 @@ public abstract class DataSourceUtils {
 		return (heldCon == passedInCon || heldCon.equals(passedInCon));
 	}
 
-	/**
-	 * Callback for resource cleanup at the end of a non-native JDBC transaction (e.g. when participating in a JtaTransactionManager transaction).
-	 * 
-	 * @see org.springframework.transaction.jta.JtaTransactionManager
-	 */
 	private static class ConnectionSynchronization extends TransactionSynchronizationAdapter {
 
 		private final ConnectionHolder connectionHolder;

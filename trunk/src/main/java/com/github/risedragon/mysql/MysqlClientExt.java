@@ -11,11 +11,11 @@ import java.sql.SQLException;
 public interface MysqlClientExt extends MysqlClient {
 
 	/**
-	 * 
 	 * Begin a new transaction
 	 * 
 	 * @return the transaction object
 	 * @throws SQLException
+	 *             if there is database access error
 	 */
 	Transaction beginTransaction() throws SQLException;
 }

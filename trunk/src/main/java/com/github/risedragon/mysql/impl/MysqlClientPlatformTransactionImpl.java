@@ -694,18 +694,18 @@ public class MysqlClientPlatformTransactionImpl extends MysqlClientOperation imp
 
 	@Override
 	public void init() throws Exception {
-		Connection conn = null;
+		Connection conn = DataSourceUtils.getConnection(dataSource);
 		try {
 			conn = dataSource.getConnection();
 			init(conn);
 		} catch (SQLException ex) {
-			conn.close();
+			// Release Connection early, to avoid potential connection pool deadlock
+			// in the case when the exception translator hasn't been initialized yet.
+			DataSourceUtils.releaseConnection(conn, dataSource);
 			conn = null;
 			throw ex;
 		} finally {
-			if (conn != null) {
-				conn.close();
-			}
+			DataSourceUtils.releaseConnection(conn, dataSource);
 		}
 	}
 

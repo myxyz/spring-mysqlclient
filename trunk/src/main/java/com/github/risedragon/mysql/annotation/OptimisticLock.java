@@ -6,7 +6,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 限制只能是Number字段，每次UPDATE后自动加1
+ * The optimistic lock field should be number type, and would auto increment
+ * 
+ * @author hezhaowu
+ * @since 0.9.1
  */
 @Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)

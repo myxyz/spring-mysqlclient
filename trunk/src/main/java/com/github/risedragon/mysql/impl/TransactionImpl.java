@@ -9,9 +9,6 @@ import com.github.risedragon.mysql.ConnectionCallback;
 import com.github.risedragon.mysql.Page;
 import com.github.risedragon.mysql.Transaction;
 
-/**
- * 带事务特性
- */
 final class TransactionImpl implements Transaction {
 
 	final Connection conn;

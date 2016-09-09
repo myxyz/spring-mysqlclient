@@ -5,11 +5,12 @@ import java.util.List;
 
 /**
  * Spring-mysqlclient core interface, which provides CRUD its bulk form @Table class.
- * <ul>
- * MysqlClient there are two important realization:
- * <li>MysqlClientPlatformTransactionImpl with the Spring container-managed transaction to perform JDBC operation
- * <li>MysqlConnectTransactionImpl manage its own affairs Connection transaction
- * </ul>
+ * 
+ * <dl>
+ * <dt>MysqlClient there are two important realization:
+ * <dd>MysqlClientPlatformTransactionImpl with the Spring container-managed transaction to perform JDBC operation
+ * <dd>MysqlConnectTransactionImpl manage its own affairs Connection transaction
+ * </dl>
  * 
  * @author hezhaowu
  * @since 0.9.1

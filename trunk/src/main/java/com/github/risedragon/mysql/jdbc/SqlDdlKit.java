@@ -34,7 +34,6 @@ public class SqlDdlKit extends SqlKit {
 
 	public static void processUpdateTable(Connection conn, Map<String, ClassMetaInfo> tableMetaInfoMap) throws SQLException {
 
-		// 外键存在依赖
 		LinkedList<String> depends = new LinkedList<String>();
 		String name;
 		for (ClassMetaInfo classMetaInfo : tableMetaInfoMap.values()) {
@@ -50,7 +49,6 @@ public class SqlDdlKit extends SqlKit {
 			}
 		}
 
-		// 避免错误,表名都转成大写比较
 		Set<String> tableSet = getUpperCaseTableNames(conn);
 		for (String table : depends) {
 			ClassMetaInfo classMetaInfo = tableMetaInfoMap.get(table);
@@ -87,7 +85,6 @@ public class SqlDdlKit extends SqlKit {
 		}
 	}
 
-	// 全部表名转成大写判断
 	public static Set<String> getUpperCaseTableNames(Connection conn) throws SQLException {
 		Set<String> tables = new HashSet<String>();
 		ResultSet rs = null;
@@ -146,7 +143,7 @@ public class SqlDdlKit extends SqlKit {
 						stmt = conn.createStatement();
 						stmt.executeUpdate(sql);
 					} catch (SQLException e) {
-						throw new MysqlClientException("为表增加字段失败：" + classMetaInfo.tableName, e);
+						throw new MysqlClientException("Add column failed for: " + classMetaInfo.tableName, e);
 					} finally {
 						if (stmt != null) {
 							stmt.close();
@@ -199,7 +196,6 @@ public class SqlDdlKit extends SqlKit {
 		boolean autoIncrement;
 	}
 
-	// 需要检测字段中的key
 	public static void checkAndAddPrimaryKey(Connection conn, ClassMetaInfo classMetaInfo, String table) throws SQLException {
 		DatabaseMetaData dbmd = conn.getMetaData();
 
@@ -231,7 +227,7 @@ public class SqlDdlKit extends SqlKit {
 					stmt = conn.createStatement();
 					stmt.executeUpdate(sb.toString());
 				} catch (SQLException e) {
-					throw new MysqlClientException("为表增加主键失败：" + classMetaInfo.tableName, e);
+					throw new MysqlClientException("Add primary key failed for: " + classMetaInfo.tableName, e);
 				} finally {
 					if (stmt != null) {
 						stmt.close();
@@ -239,7 +235,7 @@ public class SqlDdlKit extends SqlKit {
 				}
 			}
 		} else if (!equalsIgnoreOrder(keys, classMetaInfo.keys)) {
-			logger.warn("主键差异：元数据" + classMetaInfo.keys + ",表定义" + keys);
+			logger.warn("Table primary keys conflict: meta" + classMetaInfo.keys + ",ddl" + keys);
 		}
 	}
 
@@ -280,7 +276,7 @@ public class SqlDdlKit extends SqlKit {
 						stmt = conn.createStatement();
 						stmt.executeUpdate(sb.toString());
 					} catch (SQLException e) {
-						throw new MysqlClientException("为表增加外键失败：" + classMetaInfo.tableName, e);
+						throw new MysqlClientException("Craate foreign key failed for: " + classMetaInfo.tableName, e);
 					} finally {
 						if (stmt != null) {
 							stmt.close();
@@ -291,7 +287,6 @@ public class SqlDdlKit extends SqlKit {
 		}
 	}
 
-	// 需要检测字段中的unique
 	public static void checkAndAddIndexes(Connection conn, ClassMetaInfo classMetaInfo, String table) throws SQLException {
 		List<IndexAnnotation> indexesAnnotation = classMetaInfo.indexesAnnotation;
 		if (indexesAnnotation != null && indexesAnnotation.size() > 0) {
@@ -320,7 +315,7 @@ public class SqlDdlKit extends SqlKit {
 						stmt = conn.createStatement();
 						stmt.executeUpdate(sb.toString());
 					} catch (SQLException e) {
-						throw new MysqlClientException("为表增加索引失败：" + classMetaInfo.tableName, e);
+						throw new MysqlClientException("Add index failed for: " + classMetaInfo.tableName, e);
 					} finally {
 						if (stmt != null) {
 							stmt.close();
@@ -469,6 +464,9 @@ public class SqlDdlKit extends SqlKit {
 		if (AsmKit.isNotEmpty(columnAnnotation.defaultValue)) {
 			cols.append(" DEFAULT ").append(formatDefaultValue(columnAnnotation.defaultValue, sqlType));
 		}
+		if(AsmKit.isNotEmpty(columnAnnotation.comment)){
+			cols.append(" COMMENT ").append('\'').append(columnAnnotation.comment).append('\'');
+		}
 
 		return cols.toString();
 	}
@@ -490,7 +488,6 @@ public class SqlDdlKit extends SqlKit {
 		case NUMERIC:
 			return defaultValue;
 		default:
-			// 其他类型如果首尾不以单引结束则自动加上
 			StringBuilder sb = new StringBuilder(defaultValue.length() + 4);
 			sb.append(defaultValue);
 			if (sb.charAt(0) != '\'') {

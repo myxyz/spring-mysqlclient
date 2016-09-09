@@ -12,7 +12,7 @@ public class SqlMeta {
 
 	public final Map<String, int[]> params;
 
-	public Map<String, Integer> labels; // 解析完SQL后保存
+	public Map<String, Integer> labels;
 
 	public SqlMeta(String psql, Map<String, int[]> params, int limitIndex) {
 		this.psql = psql;
@@ -24,9 +24,6 @@ public class SqlMeta {
 		return toString(psql);
 	}
 
-	/**
-	 * 针对变异后的SQL
-	 */
 	public String toString(String psql) {
 		StringBuilder sb = new StringBuilder(1024);
 		sb.append("{psql: ").append(psql).append(", ");

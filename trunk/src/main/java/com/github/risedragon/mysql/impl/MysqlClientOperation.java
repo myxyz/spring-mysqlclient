@@ -53,20 +53,19 @@ abstract class MysqlClientOperation {
 
 	private static final Log logger = LogFactory.getLog(MysqlClientOperation.class);
 
-	/*****************************************************************
-	 * 配置属性
-	 *****************************************************************/
-	DataSource dataSource; // 数据源
-	String packagesToScan; // 多值用逗号分隔
-	String configLocations; // 多值用逗号分隔
-	boolean showSql; // 显示sql
-	boolean checkConfig; // 检查配置，特别是SQL。@TODO：目前没有很的办法
-	boolean updateTable; // 是否更新表结构
+	/*
+	 * Config properties
+	 */
+	DataSource dataSource;
+	String packagesToScan; // multi-value separated by comma ","
+	String configLocations; // multi-value separated by comma ","
+	boolean showSql; // show sql or not
+	boolean checkConfig; // check sql config or not, not used now
+	boolean updateTable; // update table or not
 
-	/*****************************************************************
-	 * 属性依赖注入方法
-	 *****************************************************************/
-
+	/*
+	 * Properties
+	 */
 	public void setDataSource(DataSource dataSource) {
 		this.dataSource = dataSource;
 	}
@@ -91,9 +90,9 @@ abstract class MysqlClientOperation {
 		this.checkConfig = checkConfig;
 	}
 
-	/**************************************************
-	 * 实体查询方法
-	 **************************************************/
+	/*
+	 * Entity operations
+	 */
 
 	protected <T> T callback(Connection conn, ConnectionCallback<T> callback) throws SQLException {
 		return callback.doInConnection(conn);
@@ -672,7 +671,7 @@ abstract class MysqlClientOperation {
 		}
 
 		if ((offset == 0 && count == Integer.MAX_VALUE) || (page.getData().size() < count)) {
-			page.setTotal(page.getData().size() + offset); // 加上起点
+			page.setTotal(page.getData().size() + offset);
 		} else {
 			try {
 				pstmt = conn.prepareStatement(SqlMetaKit.modifyPsqlForPageTotal(meta));
@@ -1083,10 +1082,9 @@ abstract class MysqlClientOperation {
 		}
 	}
 
-	/**************************************************
-	 * 非实体查询方法
-	 **************************************************/
-
+	/*
+	 * Sql config operations
+	 */
 	@SuppressWarnings("unchecked")
 	protected <T> List<T> query(Connection conn, String queryId, Class<T> elemType, Object params) throws SQLException {
 
@@ -1166,7 +1164,6 @@ abstract class MysqlClientOperation {
 		}
 	}
 
-	// 对于SQL，不能简单使用LIMIT语法获取第一条记录
 	@SuppressWarnings("unchecked")
 	protected <T> T queryFirst(Connection conn, String queryId, Class<T> elemType, Object params) throws SQLException {
 
@@ -1258,7 +1255,7 @@ abstract class MysqlClientOperation {
 		}
 
 		if ((offset == 0 && count == Integer.MAX_VALUE) || (page.getData().size() < count)) {
-			page.setTotal(page.getData().size() + offset); // 加上起点
+			page.setTotal(page.getData().size() + offset);
 		} else {
 			try {
 				pstmt = conn.prepareStatement(SqlMetaKit.modifyPsqlForPageTotal(meta));
@@ -1411,17 +1408,16 @@ abstract class MysqlClientOperation {
 		}
 	}
 
-	/*****************************************************************
-	 * 初始化方法，解析Meta. 注意ClassLoader的影响
-	 *****************************************************************/
+	/*
+	 * Initialization for mysqlclient
+	 */
 	protected void init(Connection conn) throws Exception {
 
 		final Pattern separator = Pattern.compile("\\s*,\\s*");
 		final PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
 
-		// 提取classMetaInfo与sql. 如果重复则自动忽略
-		Map<String, ClassMetaInfo> classMetaInfoMap = new HashMap<String, ClassMetaInfo>(); // 以className为key
-		Map<String, ClassMetaInfo> tableMetaInfoMap = new HashMap<String, ClassMetaInfo>(); // 以tableName为key
+		Map<String, ClassMetaInfo> classMetaInfoMap = new HashMap<String, ClassMetaInfo>(); // key is classname
+		Map<String, ClassMetaInfo> tableMetaInfoMap = new HashMap<String, ClassMetaInfo>(); // key is tablename
 		Map<String, String> sqlMap = new HashMap<String, String>();
 
 		ClassMetaInfo classMetaInfo, tableMetaInfo;
@@ -1437,15 +1433,15 @@ abstract class MysqlClientOperation {
 					Resource[] rss = resolver.getResources(packageSearchPath);
 					for (Resource rs : rss) {
 						classMetaInfo = AsmKit.getAnnotationClassMetaInfo(rs);
-						// 带有@Table或@Meta才处理
+
 						if (classMetaInfo.tableAnnotation != null || classMetaInfo.metaAnnotation != null) {
 							classMetaInfoMap.put(AsmKit.getClassNameFromInternalName(classMetaInfo.internalName), classMetaInfo);
 							if (classMetaInfo.tableAnnotation != null) {
 								if (logger.isInfoEnabled()) {
-									logger.info(String.format("Load @Table：%s %s", classMetaInfo.tableName, classMetaInfo.columns));
+									logger.info(String.format("Load @Table: %s %s", classMetaInfo.tableName, classMetaInfo.columns));
 								}
 								if ((tableMetaInfo = tableMetaInfoMap.put(classMetaInfo.tableName, classMetaInfo)) != null) {
-									throw new MysqlClientException("Duplicate @Table：" + classMetaInfo.tableName + ", please check class:" + classMetaInfo.internalName + "," + tableMetaInfo.internalName);
+									throw new MysqlClientException("Duplicate @Table: " + classMetaInfo.tableName + ", please check class:" + classMetaInfo.internalName + "," + tableMetaInfo.internalName);
 								}
 							}
 						}
@@ -1461,25 +1457,25 @@ abstract class MysqlClientOperation {
 					for (Resource rs : rss) {
 						ConfigMetaInfo configMetaInfo = ConfigSAXParser.parse(rs);
 						for (String className : configMetaInfo.tables) {
-							// 如果存在不再解析
+
 							if (!classMetaInfoMap.containsKey(className)) {
 								classMetaInfo = AsmKit.getAnnotationClassMetaInfo(className);
-								// 带有@Table或@Meta才处理
+
 								if (classMetaInfo.tableAnnotation != null || classMetaInfo.metaAnnotation != null) {
 									classMetaInfoMap.put(className, classMetaInfo);
 									if (classMetaInfo.tableAnnotation != null) {
 										if (logger.isInfoEnabled()) {
-											logger.info(String.format("Load @Table：%s %s", classMetaInfo.tableName, classMetaInfo.columns));
+											logger.info(String.format("Load @Table: %s %s", classMetaInfo.tableName, classMetaInfo.columns));
 										}
 										if ((tableMetaInfo = tableMetaInfoMap.put(classMetaInfo.tableName, classMetaInfo)) != null) {
-											throw new MysqlClientException("Duplicate @Table：" + classMetaInfo.tableName + ", please check class:" + classMetaInfo.internalName + "," + tableMetaInfo.internalName);
+											throw new MysqlClientException("Duplicate @Table: " + classMetaInfo.tableName + ", please check class: " + classMetaInfo.internalName + "," + tableMetaInfo.internalName);
 										}
 									}
 								}
 							}
 						}
 						for (String meta : configMetaInfo.metas) {
-							// 如果存在不再解析
+
 							if (!classMetaInfoMap.containsKey(meta)) {
 								classMetaInfo = AsmKit.getClassMetaInfo(meta);
 								classMetaInfo.tableAnnotation = null; // FIXBUG:<meta>的类不是t<table>
@@ -1490,11 +1486,12 @@ abstract class MysqlClientOperation {
 							// key = namespace + . + id
 							sb.setLength(0);
 							if (AsmKit.isNotEmpty(configMetaInfo.namespace)) {
-								sb.append(configMetaInfo.namespace).append('.');// 没有namespace,自动忽略
+								// ignore if not setting namespace
+								sb.append(configMetaInfo.namespace).append('.');
 							}
 							key = sb.append(entry.getKey()).toString();
 							if (sqlMap.put(key, entry.getValue()) != null) {
-								throw new MysqlClientException("Duplicate sql id：" + key);
+								throw new MysqlClientException("Duplicate sql id: " + key);
 							}
 						}
 					}
@@ -1502,7 +1499,6 @@ abstract class MysqlClientOperation {
 			}
 		}
 
-		// 从classMetaInfo解析出SqlAction， SqlMeta.并存入Repository
 		Class<?> clazz;
 		for (Map.Entry<String, ClassMetaInfo> entry : classMetaInfoMap.entrySet()) {
 
@@ -1522,13 +1518,12 @@ abstract class MysqlClientOperation {
 			}
 
 		}
-		// 从sql解析出SqlMeta并存入Repository
+
 		for (Map.Entry<String, String> entry : sqlMap.entrySet()) {
 			configSqlMetaCache.put(entry.getKey(), SqlMetaKit.genConfigSqlMeta(entry.getKey(), entry.getValue()));
 		}
 
 		if (updateTable) {
-			// 从classMetaInfo解析出ddlMeta,并更新表结构
 			if (tableMetaInfoMap.size() > 0) {
 				SqlDdlKit.processUpdateTable(conn, tableMetaInfoMap);
 			}
@@ -1566,9 +1561,9 @@ abstract class MysqlClientOperation {
 		}
 	}
 
-	/******************************************************
-	 * SqlMeta全局缓存池
-	 ******************************************************/
+	/*
+	 * SqlMeta global cache
+	 */
 	final Map<Class, SqlMeta> selectAllSqlMetaCache = new HashMap<Class, SqlMeta>();
 	final Map<Class, SqlMeta> selectSqlMetaCache = new HashMap<Class, SqlMeta>();
 	final Map<Class, SqlMeta> insertSqlMetaCache = new HashMap<Class, SqlMeta>();
@@ -1578,10 +1573,10 @@ abstract class MysqlClientOperation {
 	final Map<Class, SqlMeta> deleteSqlMetaCache = new HashMap<Class, SqlMeta>();
 	final Map<String, SqlMeta> configSqlMetaCache = new HashMap<String, SqlMeta>();
 
-	/******************************************************
-	 * SqlAction全局缓存池,可能产生很多，允许释放再生成
-	 ******************************************************/
-	// JdbcAction分成2种：持久 与临时，后者内存不足时会去除
+	/*
+	 * SqlAction global cache, and temporary instance allowed to release
+	 */
+	// There are 2 jdbc actions: persist and temporary
 	final Map<Class, JdbcAction> persistJdbcActionCache = new HashMap<Class, JdbcAction>();
 	final Map<Class, SoftReference<JdbcAction>> tempoJdbcActionCache = new HashMap<Class, SoftReference<JdbcAction>>();
 
@@ -1631,7 +1626,6 @@ abstract class MysqlClientOperation {
 
 	protected final JdbcAction getJdbcAction(Class type) throws MysqlClientException {
 
-		// 特殊
 		if (type == null) {
 			return JdbcAction.ARRAY_JDBC_ACTION;
 		} else if (Map.class.isAssignableFrom(type)) {
@@ -1639,13 +1633,10 @@ abstract class MysqlClientOperation {
 		} else if (List.class.isAssignableFrom(type)) {
 			return JdbcAction.LIST_JDBC_ACTION;
 		}
-		// 持久
 		JdbcAction action = persistJdbcActionCache.get(type);
 		if (action == null) {
-			// 临时
 			SoftReference<JdbcAction> ref = tempoJdbcActionCache.get(type);
 			if (ref == null || (action = ref.get()) == null) {
-				// 不支持基本类型与数组类型
 				if (type.isArray() || type.isEnum() || type.isInterface() || type.isAnnotation()) {
 					throw new MysqlClientException("JdbcAction don't support array, enum, interface, or annoation type:" + type.getCanonicalName());
 				}

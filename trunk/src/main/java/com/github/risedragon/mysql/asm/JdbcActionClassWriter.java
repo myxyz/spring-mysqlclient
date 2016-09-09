@@ -14,9 +14,6 @@ import com.github.risedragon.mysql.data.ClassMetaInfo;
 import com.github.risedragon.mysql.data.MethodMetaInfo;
 import com.github.risedragon.mysql.jdbc.JdbcAction;
 
-/***********************************************************************
- * 生成SqlAction的ASM代码,相关类路径及结构变动务必更新此类
- ***********************************************************************/
 class JdbcActionClassWriter implements Opcodes {
 
 	static final String SuperClassDesc = Type.getInternalName(JdbcAction.class);
@@ -37,16 +34,6 @@ class JdbcActionClassWriter implements Opcodes {
 		}
 	}
 
-	/**
-	 * 
-	 * @param targetInternalName,
-	 *            代理类
-	 * @param internalName,
-	 *            当前类
-	 * @param classMetaInfo
-	 * @return
-	 * @throws IOException
-	 */
 	public static byte[] dump(String internalName, ClassMetaInfo classMetaInfo) throws IOException {
 
 		StringBuilder sb = new StringBuilder(128);
@@ -88,7 +75,7 @@ class JdbcActionClassWriter implements Opcodes {
 			mv.visitVarInsn(ASTORE, 4);
 			Label l1 = new Label();
 			mv.visitLabel(l1);
-			/************************ 遍历属性begin ************************/
+			/************************ begin ************************/
 			frameSame = false;
 			for (Map.Entry<String, MethodMetaInfo> entry : classMetaInfo.getters.entrySet()) {
 				name = entry.getKey();
@@ -115,7 +102,7 @@ class JdbcActionClassWriter implements Opcodes {
 					mv.visitFrame(Opcodes.F_APPEND, 2, new Object[] { classMetaInfo.internalName, "[I" }, 0, null);
 				}
 			}
-			/************************ 遍历属性end ************************/
+			/************************ end ************************/
 			mv.visitInsn(RETURN);
 			Label l2 = new Label();
 			mv.visitLabel(l2);
@@ -140,7 +127,7 @@ class JdbcActionClassWriter implements Opcodes {
 			mv.visitVarInsn(ASTORE, 3);
 			Label l1 = new Label();
 			mv.visitLabel(l1);
-			/************************ 遍历属性begin ************************/
+			/************************ begin ************************/
 			frameSame = false;
 			for (Map.Entry<String, MethodMetaInfo> entry : classMetaInfo.setters.entrySet()) {
 				name = entry.getKey();
@@ -167,7 +154,7 @@ class JdbcActionClassWriter implements Opcodes {
 					mv.visitFrame(Opcodes.F_APPEND, 2, new Object[] { classMetaInfo.internalName, "java/lang/Integer" }, 0, null);
 				}
 			}
-			/************************ 遍历属性end ************************/
+			/************************ end ************************/
 			mv.visitVarInsn(ALOAD, 3);
 			mv.visitInsn(ARETURN);
 			Label l2 = new Label();
@@ -180,7 +167,7 @@ class JdbcActionClassWriter implements Opcodes {
 			mv.visitMaxs(4, 5);
 			mv.visitEnd();
 		}
-		
+
 		{
 			mv = cw.visitMethod(ACC_PUBLIC, "getResult2", "(Ljava/sql/ResultSet;Ljava/util/Map;Ljava/lang/Object;)V", "(Ljava/sql/ResultSet;Ljava/util/Map<Ljava/lang/String;Ljava/lang/Integer;>;Ljava/lang/Object;)V", new String[] { "java/sql/SQLException" });
 			mv.visitCode();
@@ -191,7 +178,7 @@ class JdbcActionClassWriter implements Opcodes {
 			mv.visitVarInsn(ASTORE, 4);
 			Label l1 = new Label();
 			mv.visitLabel(l1);
-			/************************ 遍历属性begin ************************/
+			/************************ begin ************************/
 			frameSame = false;
 			for (Map.Entry<String, MethodMetaInfo> entry : classMetaInfo.setters.entrySet()) {
 				name = entry.getKey();
@@ -218,7 +205,7 @@ class JdbcActionClassWriter implements Opcodes {
 					mv.visitFrame(Opcodes.F_APPEND, 2, new Object[] { classMetaInfo.internalName, "java/lang/Integer" }, 0, null);
 				}
 			}
-			/************************ 遍历属性end ************************/
+			/************************ end ************************/
 			mv.visitInsn(RETURN);
 			Label l2 = new Label();
 			mv.visitLabel(l2);

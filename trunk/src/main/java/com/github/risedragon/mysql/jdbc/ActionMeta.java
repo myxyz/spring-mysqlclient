@@ -5,7 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * SQL转换类统一接口
+ * Action meta operation for a type
  */
 public interface ActionMeta {
 

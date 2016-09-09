@@ -66,7 +66,7 @@ public final class SqlMetaKit extends SqlKit {
 		SqlMeta meta = null;
 		ParamHolder[] holders = parseParamHolderList(id, sql);
 		if (holders.length > 0) {
-			// 替换SQL中的参数
+
 			StringBuilder sb = new StringBuilder(sql);
 			Map<String, List<Integer>> tmp = new HashMap<String, List<Integer>>(holders.length);
 			for (int i = holders.length - 1; i >= 0; i--) {
@@ -203,7 +203,7 @@ public final class SqlMetaKit extends SqlKit {
 		StringBuilder colsStr = new StringBuilder(128);
 		LinkedHashSet<String> cols = new LinkedHashSet<String>();
 		cols.addAll(classMetaInfo.columns);
-		cols.removeAll(classMetaInfo.keys); // 排除主键
+		cols.removeAll(classMetaInfo.keys);
 		for (String field : cols) {
 			if (colsStr.length() > 0) {
 				colsStr.append(',');
@@ -303,7 +303,7 @@ public final class SqlMetaKit extends SqlKit {
 		StringBuilder updateStr = new StringBuilder(128);
 		LinkedHashSet<String> cols = new LinkedHashSet<String>();
 		cols.addAll(classMetaInfo.columns);
-		cols.removeAll(classMetaInfo.keys); // 排除主键
+		cols.removeAll(classMetaInfo.keys);
 		for (String field : cols) {
 			if (updateStr.length() > 0) {
 				updateStr.append(',');
@@ -342,9 +342,6 @@ public final class SqlMetaKit extends SqlKit {
 		return new SqlMeta(delete.toString(), Collections.unmodifiableMap(params), -1);
 	}
 
-	/********************************************************
-	 * 
-	 ********************************************************/
 	static final char[] LIMIT = { 'L', 'I', 'M', 'I', 'T' };
 	static final int DIFF = ('A' - 'a');
 
@@ -362,11 +359,11 @@ public final class SqlMetaKit extends SqlKit {
 				IS_LIMIT_WORD: if (i - mark == LIMIT.length) {
 					for (int j1 = 0, j2 = mark, diff; j2 < i; j1++, j2++) {
 						diff = LIMIT[j1] - chars[j2];
-						if (diff != 0 && diff != DIFF) { // 忽略大小写
+						if (diff != 0 && diff != DIFF) {
 							break IS_LIMIT_WORD;
 						}
 					}
-					return mark; // 相等则返回下标
+					return mark;
 				}
 			} else {
 				switch (chars[i]) {
@@ -378,7 +375,7 @@ public final class SqlMetaKit extends SqlKit {
 					while ((++i) < n) {
 						if (chars[i] == '\'') {
 							if (i + 1 < n && chars[i + 1] == '\'') {
-								i++; // 再前移到后面的单引
+								i++;
 							} else {
 								break;
 							}
@@ -397,7 +394,7 @@ public final class SqlMetaKit extends SqlKit {
 							while ((++i) < n) {
 								if (chars[i] == '\'') {
 									if (i + 1 < n && chars[i + 1] == '\'') {
-										i++; // 再前移到后面的单引
+										i++;
 									} else {
 										break;
 									}
@@ -432,7 +429,7 @@ public final class SqlMetaKit extends SqlKit {
 				mark = i;
 				while ((++i) < n && Character.isJavaIdentifierPart(chars[i])) {
 				}
-				vars.add(new ParamHolder(String.valueOf(chars, mark + 1, i - mark - 1), mark, i)); // 起始下标为:
+				vars.add(new ParamHolder(String.valueOf(chars, mark + 1, i - mark - 1), mark, i));
 				break;
 			case '`':
 				while ((++i) < n && chars[i] != '`') {
@@ -443,7 +440,7 @@ public final class SqlMetaKit extends SqlKit {
 				while ((++i) < n) {
 					if (chars[i] == '\'') {
 						if (i + 1 < n && chars[i + 1] == '\'') {
-							i++; // 再前移到后面的单引
+							i++;
 						} else {
 							break;
 						}

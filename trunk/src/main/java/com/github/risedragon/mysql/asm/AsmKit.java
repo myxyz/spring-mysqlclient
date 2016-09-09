@@ -56,13 +56,6 @@ public final class AsmKit {
 		return className.replace('.', '/');
 	}
 
-	/***********************************************************************
-	 * 生成SqlAction的ASM代码. 如果类路径下存在相同的类,则不再加载字节码。
-	 * 
-	 * @throws IOException
-	 * @throws IllegalAccessException
-	 * @throws InstantiationException
-	 ***********************************************************************/
 	public static JdbcAction newJdbcAction(ClassMetaInfo classMetaInfo) throws IOException, ReflectiveOperationException {
 		String internalName = classMetaInfo.internalName + "$SqlAction";
 		String className = internalName.replace('/', '.');
@@ -91,9 +84,6 @@ public final class AsmKit {
 		return (JdbcAction) c.newInstance();
 	}
 
-	/***********************************************************************
-	 * 提取ClassMetaInfo的ASM代码
-	 ***********************************************************************/
 	public static ClassMetaInfo getAnnotationClassMetaInfo(Resource rs) throws IOException {
 		ClassReader cr = null;
 		InputStream is = null;
@@ -137,9 +127,6 @@ public final class AsmKit {
 		return classMetaInfo;
 	}
 
-	/**
-	 * 尾后处理，将setter与getter的key改为columnName. 但fields不需要！
-	 */
 	static final int CAP_DIF = ('A' - 'a');
 
 	static void changeGetterOrSetterToColumnName(Map<String, MethodMetaInfo> methods, Map<String, FieldMetaInfo> fields) {
@@ -176,7 +163,6 @@ public final class AsmKit {
 
 	static void gatherTableMetaData(ClassMetaInfo classMetaInfo) {
 
-		// 表名
 		String tableName = null;
 		if (classMetaInfo.tableAnnotation != null) {
 			tableName = classMetaInfo.tableAnnotation.name;
@@ -187,7 +173,6 @@ public final class AsmKit {
 		}
 		classMetaInfo.tableName = tableName;
 
-		// 字段排序
 		List<FieldMetaInfo> fields = new LinkedList<FieldMetaInfo>(classMetaInfo.fields.values());
 		Collections.sort(fields, FieldMetaInfoComparator);
 		classMetaInfo.fields.clear();
@@ -195,7 +180,6 @@ public final class AsmKit {
 			classMetaInfo.fields.put(field.name, field);
 		}
 
-		// 主键
 		List<String> keys = new LinkedList<String>();
 		List<String> cols = new LinkedList<String>();
 		for (FieldMetaInfo field : fields) {
